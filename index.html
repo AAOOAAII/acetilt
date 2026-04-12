@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lattice Steganography</title>
+</head>
+<body>
+  <h1>Lattice Steganography</h1>
+
+  <p>
+    Mode:
+    <label><input type="radio" name="mode" value="basic"> Basic</label>
+    <label><input type="radio" name="mode" value="lattice" id="modeLattice" checked> Lattice</label>
+  </p>
+
+  <div id="latticeParams">
+    <p>
+      Basis matrix B (key) — columns b<sub>1</sub>, b<sub>2</sub> define the lattice:
+      <br>
+      <table style="border-collapse:collapse;display:inline-table;margin-top:4px">
+        <tr>
+          <td style="padding:2px"><input type="number" id="b00" value="16" style="width:52px"></td>
+          <td style="padding:2px"><input type="number" id="b01" value="4"  style="width:52px"></td>
+        </tr>
+        <tr>
+          <td style="padding:2px"><input type="number" id="b10" value="4"  style="width:52px"></td>
+          <td style="padding:2px"><input type="number" id="b11" value="16" style="width:52px"></td>
+        </tr>
+      </table>
+      &nbsp;<span id="ptCount" style="font-size:0.9em;color:#555"></span>
+    </p>
+    <p style="margin-top:0">
+      Carrier image (optional):
+      <input type="file" id="carrierInput" accept="image/png,image/jpeg">
+      <button id="carrierClear" style="display:none;font-size:0.85em">Clear</button>
+      <br>
+      <span id="carrierInfo" style="font-size:0.85em;color:#555">Leave blank to use the generated white lattice image.</span>
+    </p>
+  </div>
+
+  <h2>Encode</h2>
+  <input type="text" id="messageInput" placeholder="Secret message">
+  <button id="encodeBtn">Encode &amp; Download PNG</button>
+  <br><br>
+  <canvas id="previewCanvas" width="512" height="512" style="display:none;border:1px solid #999;max-width:512px"></canvas>
+
+  <h2>Decode</h2>
+  <input type="file" id="pngInput" accept="image/png">
+  <button id="decodeBtn">Decode</button>
+  <p id="decoded"></p>
+
+  <!-- Off-screen working canvas -->
+  <canvas id="canvas" width="512" height="512" hidden></canvas>
+
+  <script>
+    const SIZE = 512;
+    const HEADER_BYTES = 2;   // big-endian uint16 message length
+
+    // ── mode toggle ──────────────────────────────────────────────────────────
+
+    document.querySelectorAll('input[name="mode"]').forEach(r => {
+      r.addEventListener('change', () => {
+        document.getElementById('latticeParams').style.display =
+          document.getElementById('modeLattice').checked ? '' : 'none';
+      });
+    });
+
+    // ── carrier image picker ─────────────────────────────────────────────────
+
+    document.getElementById('carrierInput').addEventListener('change', () => {
+      const file = document.getElementById('carrierInput').files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const B = getB();
+          const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
+          const info = document.getElementById('carrierInfo');
+          if (det === 0) {
+            info.textContent = `${img.width}×${img.height} px — fix the basis matrix to see capacity.`;
+          } else {
+            const pts = getLatticePoints(B, img.width, img.height);
+            const maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
+            info.textContent =
+              `${img.width}×${img.height} px — ${pts.length} lattice points → max ${maxMsg} bytes`;
+          }
+          document.getElementById('carrierClear').style.display = '';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('carrierClear').addEventListener('click', () => {
+      document.getElementById('carrierInput').value = '';
+      document.getElementById('carrierClear').style.display = 'none';
+      document.getElementById('carrierInfo').textContent =
+        'Leave blank to use the generated white lattice image.';
+      updatePtCount();
+    });
+
+    // ── helpers ────────────────────────────────────────────────────────────
+
+    function bytesToBits(bytes) {
+      const bits = [];
+      for (const b of bytes) {
+        for (let i = 7; i >= 0; i--) bits.push((b >> i) & 1);
+      }
+      return bits;
+    }
+
+    function getB() {
+      return [
+        [parseInt(document.getElementById('b00').value) || 0,
+         parseInt(document.getElementById('b01').value) || 0],
+        [parseInt(document.getElementById('b10').value) || 0,
+         parseInt(document.getElementById('b11').value) || 0]
+      ];
+    }
+
+    // Return all lattice points inside [0, width) × [0, height).
+    // B is a 2×2 matrix; column vectors are the basis:
+    //   b1 = (B[0][0], B[1][0])   b2 = (B[0][1], B[1][1])
+    // Lattice = { n1·b1 + n2·b2  |  n1, n2 ∈ ℤ } ∩ image bounds
+    // Result is sorted row-major (y then x) for a canonical bit order.
+    function getLatticePoints(B, width, height) {
+      const b1x = B[0][0], b1y = B[1][0];
+      const b2x = B[0][1], b2y = B[1][1];
+
+      const maxCoord = Math.max(width, height);
+      const nonzero = [b1x, b1y, b2x, b2y].filter(v => v !== 0).map(Math.abs);
+      if (nonzero.length === 0) return [];
+      const minStep = Math.min(...nonzero);
+      const range = Math.ceil(maxCoord / minStep) + 2;
+
+      const seen = new Set();
+      const pts = [];
+      for (let n1 = -range; n1 <= range; n1++) {
+        for (let n2 = -range; n2 <= range; n2++) {
+          const x = n1 * b1x + n2 * b2x;
+          const y = n1 * b1y + n2 * b2y;
+          if (x >= 0 && x < width && y >= 0 && y < height) {
+            const key = y * width + x;
+            if (!seen.has(key)) {
+              seen.add(key);
+              pts.push([x, y]);
+            }
+          }
+        }
+      }
+      pts.sort((a, b) => a[1] !== b[1] ? a[1] - b[1] : a[0] - b[0]);
+      return pts;
+    }
+
+    // Update capacity readout whenever B inputs change.
+    // Also refreshes the carrier image capacity line when a carrier is loaded.
+    function updatePtCount() {
+      if (!document.getElementById('modeLattice').checked) return;
+      const B = getB();
+      const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
+      const span = document.getElementById('ptCount');
+      if (det === 0) { span.textContent = '(singular basis — det = 0)'; return; }
+      const n = getLatticePoints(B, SIZE, SIZE).length;
+      const maxMsg = Math.floor(n / 8) - HEADER_BYTES;
+      span.textContent = `(${n} lattice points → max ${maxMsg} bytes)`;
+
+      // If a carrier is already loaded, update its capacity line too
+      const carrierFile = document.getElementById('carrierInput').files[0];
+      if (!carrierFile) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const pts = getLatticePoints(B, img.width, img.height);
+          const maxC = Math.floor(pts.length / 8) - HEADER_BYTES;
+          document.getElementById('carrierInfo').textContent =
+            `${img.width}×${img.height} px — ${pts.length} lattice points → max ${maxC} bytes`;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(carrierFile);
+    }
+
+    ['b00','b01','b10','b11'].forEach(id =>
+      document.getElementById(id).addEventListener('input', updatePtCount));
+    document.querySelectorAll('input[name="mode"]').forEach(r =>
+      r.addEventListener('change', updatePtCount));
+    updatePtCount();
+
+    // ── basic mode constants (unchanged) ──────────────────────────────────
+
+    const SPACING        = 16;
+    const NODES          = SIZE / SPACING;           // 32 per axis
+    const BASIC_TOTAL_BITS = NODES * NODES;          // 1024 bits
+    const BASIC_MAX_MSG  = BASIC_TOTAL_BITS / 8 - HEADER_BYTES;  // 126 bytes
+
+    // ── image builders ─────────────────────────────────────────────────────
+
+    function buildBasicPixels() {
+      const imgData = new ImageData(SIZE, SIZE);
+      const px = imgData.data;
+      for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+          const i = (y * SIZE + x) * 4;
+          const v = ((x % SPACING === 0) || (y % SPACING === 0)) ? 200 : 255;
+          px[i] = px[i + 1] = px[i + 2] = v;
+          px[i + 3] = 255;
+        }
+      }
+      return imgData;
+    }
+
+    // White background; lattice nodes rendered as gray dots.
+    function buildLatticePixels(pts) {
+      const imgData = new ImageData(SIZE, SIZE);
+      const px = imgData.data;
+      for (let i = 0; i < px.length; i += 4) {
+        px[i] = px[i + 1] = px[i + 2] = 255;
+        px[i + 3] = 255;
+      }
+      for (const [x, y] of pts) {
+        const i = (y * SIZE + x) * 4;
+        px[i] = px[i + 1] = px[i + 2] = 200;
+      }
+      return imgData;
+    }
+
+    // ── encode ─────────────────────────────────────────────────────────────
+
+    document.getElementById('encodeBtn').addEventListener('click', () => {
+      const msg = document.getElementById('messageInput').value;
+      if (!msg) { alert('Enter a message.'); return; }
+
+      const msgBytes = new TextEncoder().encode(msg);
+      const isLattice = document.getElementById('modeLattice').checked;
+
+      if (isLattice) {
+        const B = getB();
+        const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
+        if (det === 0) {
+          alert('Basis matrix is singular (det = 0). Choose a different basis.');
+          return;
+        }
+
+        const carrierFile = document.getElementById('carrierInput').files[0];
+
+        if (carrierFile) {
+          // ── carrier image path ───────────────────────────────────────────
+          const reader = new FileReader();
+          reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+              const w = img.width, h = img.height;
+              const pts = getLatticePoints(B, w, h);
+              const maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
+              if (maxMsg < 1) {
+                alert('Basis matrix produces too few lattice points for this carrier image size.');
+                return;
+              }
+              if (msgBytes.length > maxMsg) {
+                alert(`Message too long for this carrier image. Max ${maxMsg} UTF-8 bytes (got ${msgBytes.length}).`);
+                return;
+              }
+
+              const payload = new Uint8Array(HEADER_BYTES + msgBytes.length);
+              payload[0] = (msgBytes.length >> 8) & 0xFF;
+              payload[1] =  msgBytes.length       & 0xFF;
+              payload.set(msgBytes, HEADER_BYTES);
+              const bits = bytesToBits(payload);
+
+              // Draw carrier onto a canvas to access and modify its pixel data
+              const cvs = document.createElement('canvas');
+              cvs.width = w; cvs.height = h;
+              const ctx = cvs.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+              const imgData = ctx.getImageData(0, 0, w, h);
+              const px = imgData.data;
+
+              // Embed bits at lattice points via LSB of blue channel
+              for (let bi = 0; bi < bits.length; bi++) {
+                const [x, y] = pts[bi];
+                const i = (y * w + x) * 4;
+                px[i + 2] = (px[i + 2] & 0xFE) | bits[bi];
+              }
+
+              finishEncode(imgData, w, h);
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(carrierFile);
+
+        } else {
+          // ── generated white lattice image (original behaviour) ───────────
+          const pts = getLatticePoints(B, SIZE, SIZE);
+          const maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
+          if (maxMsg < 1) {
+            alert('Basis matrix produces too few lattice points for encoding.');
+            return;
+          }
+          if (msgBytes.length > maxMsg) {
+            alert(`Message too long for this basis. Max ${maxMsg} UTF-8 bytes (got ${msgBytes.length}).`);
+            return;
+          }
+
+          const payload = new Uint8Array(HEADER_BYTES + msgBytes.length);
+          payload[0] = (msgBytes.length >> 8) & 0xFF;
+          payload[1] =  msgBytes.length       & 0xFF;
+          payload.set(msgBytes, HEADER_BYTES);
+          const bits = bytesToBits(payload);
+
+          const imgData = buildLatticePixels(pts);
+          const px = imgData.data;
+          for (let bi = 0; bi < bits.length; bi++) {
+            const [x, y] = pts[bi];
+            const i = (y * SIZE + x) * 4;
+            px[i + 2] = (px[i + 2] & 0xFE) | bits[bi];
+          }
+
+          finishEncode(imgData, SIZE, SIZE);
+        }
+
+      } else {
+        // ── basic mode ────────────────────────────────────────────────────
+        if (msgBytes.length > BASIC_MAX_MSG) {
+          alert(`Message too long. Max ${BASIC_MAX_MSG} UTF-8 bytes (got ${msgBytes.length}).`);
+          return;
+        }
+
+        const payload = new Uint8Array(HEADER_BYTES + msgBytes.length);
+        payload[0] = (msgBytes.length >> 8) & 0xFF;
+        payload[1] =  msgBytes.length       & 0xFF;
+        payload.set(msgBytes, HEADER_BYTES);
+        const bits = bytesToBits(payload);
+
+        const imgData = buildBasicPixels();
+        const px = imgData.data;
+        let bitIdx = 0;
+        for (let row = 0; row < NODES; row++) {
+          for (let col = 0; col < NODES; col++) {
+            const pxI = (row * SPACING * SIZE + col * SPACING) * 4;
+            const bit = bitIdx < bits.length ? bits[bitIdx++] : 0;
+            px[pxI + 2] = (px[pxI + 2] & 0xFE) | bit;
+          }
+        }
+
+        finishEncode(imgData, SIZE, SIZE);
+      }
+    });
+
+    function finishEncode(imgData, width, height) {
+      const canvas = document.getElementById('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').putImageData(imgData, 0, 0);
+
+      const preview = document.getElementById('previewCanvas');
+      preview.width = width;
+      preview.height = height;
+      preview.style.display = 'block';
+      preview.getContext('2d').putImageData(imgData, 0, 0);
+
+      canvas.toBlob(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'encoded.png';
+        a.click();
+      }, 'image/png');
+    }
+
+    // ── decode ─────────────────────────────────────────────────────────────
+
+    document.getElementById('decodeBtn').addEventListener('click', () => {
+      const file = document.getElementById('pngInput').files[0];
+      if (!file) { alert('Select a PNG file first.'); return; }
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const cvs = document.createElement('canvas');
+          cvs.width  = img.width;
+          cvs.height = img.height;
+          const ctx = cvs.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const px = ctx.getImageData(0, 0, img.width, img.height).data;
+
+          const isLattice = document.getElementById('modeLattice').checked;
+          const out = document.getElementById('decoded');
+          let bits, maxMsg;
+
+          if (isLattice) {
+            const B = getB();
+            const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
+            if (det === 0) { out.textContent = 'Error: singular basis matrix.'; return; }
+            const pts = getLatticePoints(B, img.width, img.height);
+            maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
+            bits = pts.map(([x, y]) => px[(y * img.width + x) * 4 + 2] & 1);
+          } else {
+            // ── basic mode ──────────────────────────────────────────────
+            const nodes = img.width / SPACING;
+            bits = [];
+            for (let row = 0; row < nodes; row++) {
+              for (let col = 0; col < nodes; col++) {
+                const pxI = (row * SPACING * img.width + col * SPACING) * 4;
+                bits.push(px[pxI + 2] & 1);
+              }
+            }
+            maxMsg = BASIC_MAX_MSG;
+          }
+
+          // Parse 16-bit length header
+          let len = 0;
+          for (let i = 0; i < 16; i++) len = (len << 1) | bits[i];
+
+          if (len <= 0 || len > maxMsg) {
+            out.textContent = 'No valid message found (length header: ' + len + ').';
+            return;
+          }
+
+          const msgBytes = new Uint8Array(len);
+          for (let b = 0; b < len; b++) {
+            let byte = 0;
+            for (let i = 0; i < 8; i++) byte = (byte << 1) | (bits[16 + b * 8 + i] || 0);
+            msgBytes[b] = byte;
+          }
+
+          out.textContent = 'Decoded: ' + new TextDecoder().decode(msgBytes);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>
