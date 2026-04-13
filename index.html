@@ -416,6 +416,82 @@
     }
     .fine-print a { color: inherit; }
 
+    /* Use Cases grid */
+    .use-cases {
+      max-width: 900px;
+      margin: 52px auto 0;
+      padding: 0 20px;
+    }
+    .use-cases-heading {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: rgba(0,255,209,0.55);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .use-cases-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .uc-card {
+      border: 1px solid rgba(0,255,209,0.22);
+      border-radius: 6px 6px 4px 4px;
+      background: rgba(8,8,38,0.85);
+      box-shadow: 0 0 0 1px rgba(0,255,209,0.06), 0 6px 20px rgba(0,0,0,0.45);
+      overflow: hidden;
+    }
+    .uc-titlebar {
+      height: 22px;
+      background: linear-gradient(180deg, #00e8be 0%, #00c9a5 100%);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 5px;
+    }
+    .uc-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .uc-dot.close { background: #ff5f57; }
+    .uc-dot.min   { background: #febc2e; }
+    .uc-dot.max   { background: #28c840; }
+    .uc-body {
+      padding: 14px 16px 16px;
+    }
+    .uc-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: #FF6B6B;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+    .uc-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      color: rgba(255,250,240,0.58);
+      line-height: 1.65;
+      margin: 0 0 13px;
+    }
+    .uc-tag {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.56rem;
+      color: rgba(0,255,209,0.65);
+      border: 1px solid rgba(0,255,209,0.22);
+      border-radius: 2px;
+      padding: 2px 8px;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+    @media (max-width: 700px) {
+      .use-cases-grid { grid-template-columns: 1fr; }
+    }
+
     /* Pixel-art decorative border on hero */
     .pixel-border {
       width: 100%;
@@ -597,6 +673,131 @@
     <h3>Enterprise mode</h3>
     <p>Multiple image stacks. Each decoded by correct orientation sequence. The key is not a password. The key is geometry.</p>
     <div class="coming-soon-badge">Coming soon</div>
+  </div>
+
+  <!-- ── Use Cases ── -->
+  <div class="use-cases">
+    <div class="use-cases-heading">Use Cases</div>
+    <div class="use-cases-grid">
+
+      <div class="uc-card">
+        <div class="uc-titlebar">
+          <div class="uc-dot close"></div>
+          <div class="uc-dot min"></div>
+          <div class="uc-dot max"></div>
+        </div>
+        <div class="uc-body">
+          <div class="uc-title">Disposable Agents</div>
+          <p class="uc-desc">An AI agent embedded in an image. One use. Then gone. No server to call, no key to revoke.</p>
+          <span class="uc-tag">AI / Defence</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-titlebar">
+          <div class="uc-dot close"></div>
+          <div class="uc-dot min"></div>
+          <div class="uc-dot max"></div>
+        </div>
+        <div class="uc-body">
+          <div class="uc-title">Deniable Communication</div>
+          <p class="uc-desc">A photo posted publicly contains a classified briefing. The platform sees nothing. Forensics finds nothing.</p>
+          <span class="uc-tag">Intelligence / Journalism</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-titlebar">
+          <div class="uc-dot close"></div>
+          <div class="uc-dot min"></div>
+          <div class="uc-dot max"></div>
+        </div>
+        <div class="uc-body">
+          <div class="uc-title">Private Key in Plain Sight</div>
+          <p class="uc-desc">Your Bitcoin seed phrase lives inside a holiday photo. An attacker who finds it sees nothing unusual.</p>
+          <span class="uc-tag">Crypto / Finance</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-titlebar">
+          <div class="uc-dot close"></div>
+          <div class="uc-dot min"></div>
+          <div class="uc-dot max"></div>
+        </div>
+        <div class="uc-body">
+          <div class="uc-title">Tiered Intelligence</div>
+          <p class="uc-desc">One image. Three payloads. Each clearance level unlocks a different reality.</p>
+          <span class="uc-tag">Defence / Government</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-titlebar">
+          <div class="uc-dot close"></div>
+          <div class="uc-dot min"></div>
+          <div class="uc-dot max"></div>
+        </div>
+        <div class="uc-body">
+          <div class="uc-title">AI Model Protection</div>
+          <p class="uc-desc">A proprietary trading model hidden inside a stock chart. The geometry is the licence. Wrong key, wrong model.</p>
+          <span class="uc-tag">Finance / Quant</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-titlebar">
+          <div class="uc-dot close"></div>
+          <div class="uc-dot min"></div>
+          <div class="uc-dot max"></div>
+        </div>
+        <div class="uc-body">
+          <div class="uc-title">Tamper-Evident Provenance</div>
+          <p class="uc-desc">Authentication embedded inside the asset itself. No blockchain lookup. No external server.</p>
+          <span class="uc-tag">Legal / NFT</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-titlebar">
+          <div class="uc-dot close"></div>
+          <div class="uc-dot min"></div>
+          <div class="uc-dot max"></div>
+        </div>
+        <div class="uc-body">
+          <div class="uc-title">Software &amp; AI Licensing</div>
+          <p class="uc-desc">Execution keys embedded in images. Use-count-bounded. Silent failure on expiry.</p>
+          <span class="uc-tag">Software / AI</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-titlebar">
+          <div class="uc-dot close"></div>
+          <div class="uc-dot min"></div>
+          <div class="uc-dot max"></div>
+        </div>
+        <div class="uc-body">
+          <div class="uc-title">Compliance &amp; Audit</div>
+          <p class="uc-desc">Tamper-evident audit trails embedded in documents using geometric signatures.</p>
+          <span class="uc-tag">Legal / Finance</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-titlebar">
+          <div class="uc-dot close"></div>
+          <div class="uc-dot min"></div>
+          <div class="uc-dot max"></div>
+        </div>
+        <div class="uc-body">
+          <div class="uc-title">Journalism &amp; Whistleblowing</div>
+          <p class="uc-desc">Source and journalist share an image publicly. The story is hidden at an orientation only they know.</p>
+          <span class="uc-tag">Press / Activism</span>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <!-- ── Fine print ── -->
