@@ -34,6 +34,38 @@
       letter-spacing: -1px;
       text-shadow: 0 0 24px rgba(0,255,209,0.35);
       line-height: 1.1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .neon-ace {
+      height: clamp(2rem, 6vw, 3.6rem);
+      width: auto;
+      flex-shrink: 0;
+      animation: neon-tilt 3s ease-in-out infinite, neon-flicker 4.7s infinite;
+      transform-origin: 50% 85%;
+    }
+    @keyframes neon-tilt {
+      0%   { transform: rotate(-12deg); }
+      50%  { transform: rotate(12deg); }
+      100% { transform: rotate(-12deg); }
+    }
+    @keyframes neon-flicker {
+      0%    { opacity:1;    filter:drop-shadow(0 0 8px #FF6B6B) drop-shadow(0 0 16px #00FFD1) drop-shadow(0 0 24px #00FFD1); }
+      8.5%  { opacity:1;    filter:drop-shadow(0 0 8px #FF6B6B) drop-shadow(0 0 16px #00FFD1) drop-shadow(0 0 24px #00FFD1); }
+      9%    { opacity:0.5;  filter:drop-shadow(0 0 3px #FF6B6B) drop-shadow(0 0 6px #00FFD1); }
+      9.5%  { opacity:1;    filter:drop-shadow(0 0 8px #FF6B6B) drop-shadow(0 0 16px #00FFD1) drop-shadow(0 0 24px #00FFD1); }
+      42%   { opacity:1;    filter:drop-shadow(0 0 8px #FF6B6B) drop-shadow(0 0 16px #00FFD1) drop-shadow(0 0 24px #00FFD1); }
+      43%   { opacity:0.6;  filter:drop-shadow(0 0 4px #FF6B6B) drop-shadow(0 0 9px #00FFD1); }
+      44%   { opacity:0.07; filter:drop-shadow(0 0 1px rgba(255,107,107,0.4)); }
+      45%   { opacity:0.6;  filter:drop-shadow(0 0 4px #FF6B6B) drop-shadow(0 0 9px #00FFD1); }
+      46%   { opacity:0.07; filter:drop-shadow(0 0 1px rgba(255,107,107,0.4)); }
+      47%   { opacity:1;    filter:drop-shadow(0 0 8px #FF6B6B) drop-shadow(0 0 16px #00FFD1) drop-shadow(0 0 24px #00FFD1); }
+      75%   { opacity:1;    filter:drop-shadow(0 0 8px #FF6B6B) drop-shadow(0 0 16px #00FFD1) drop-shadow(0 0 24px #00FFD1); }
+      75.5% { opacity:0.35; filter:drop-shadow(0 0 2px #FF6B6B) drop-shadow(0 0 5px #00FFD1); }
+      76%   { opacity:1;    filter:drop-shadow(0 0 8px #FF6B6B) drop-shadow(0 0 16px #00FFD1) drop-shadow(0 0 24px #00FFD1); }
+      100%  { opacity:1;    filter:drop-shadow(0 0 8px #FF6B6B) drop-shadow(0 0 16px #00FFD1) drop-shadow(0 0 24px #00FFD1); }
     }
     .hero-sub {
       font-family: 'Space Mono', monospace;
@@ -365,6 +397,22 @@
       text-transform: uppercase;
     }
 
+    /* Mode description */
+    .mode-description {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: rgba(0,255,209,0.4);
+      line-height: 1.7;
+      margin-top: 8px;
+      padding: 6px 10px;
+      border-left: 2px solid rgba(0,255,209,0.15);
+    }
+
+    /* Desktop without compass */
+    .desktop.compass-hidden {
+      grid-template-columns: 1fr;
+    }
+
     /* Enterprise teaser */
     .enterprise-teaser {
       max-width: 860px;
@@ -528,7 +576,19 @@
 
   <!-- ── Hero ── -->
   <div class="hero">
-    <div class="hero-logo">Acetilt</div>
+    <div class="hero-logo">
+      <svg class="neon-ace" viewBox="0 0 50 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="47" height="67" rx="4" ry="4" fill="none" stroke="#00FFD1" stroke-width="1.8"/>
+        <text x="9" y="16" font-family="'Space Mono', monospace" font-size="12" font-weight="700" fill="#00FFD1" text-anchor="middle">A</text>
+        <text x="9" y="25.5" font-family="serif" font-size="11" fill="#00FFD1" text-anchor="middle">♠</text>
+        <text x="25" y="49" font-family="serif" font-size="34" fill="#00FFD1" text-anchor="middle">♠</text>
+        <g transform="rotate(180,25,35)">
+          <text x="9" y="16" font-family="'Space Mono', monospace" font-size="12" font-weight="700" fill="#00FFD1" text-anchor="middle">A</text>
+          <text x="9" y="25.5" font-family="serif" font-size="11" fill="#00FFD1" text-anchor="middle">♠</text>
+        </g>
+      </svg>
+      Acetilt
+    </div>
     <div class="hero-sub">Geometric Cryptography</div>
     <div class="hero-tagline">The key is not a password. The key is geometry.</div>
   </div>
@@ -563,9 +623,10 @@
             <label class="radio-chip"><input type="radio" name="mode" value="advanced" id="modeAdvanced"> Advanced</label>
             <label class="radio-chip"><input type="radio" name="mode" value="stacking" id="modeStacking"> Stacking</label>
           </div>
+          <div id="modeDescription" class="mode-description"></div>
         </div>
 
-        <!-- Lattice params -->
+        <!-- Lattice params (basis matrix — Lattice + Advanced only) -->
         <div id="latticeParams">
           <div class="field-row">
             <label>Basis matrix B — key geometry</label>
@@ -578,20 +639,20 @@
             <div class="pt-count" id="ptCount"></div>
           </div>
 
-          <!-- Carrier section -->
-          <div id="carrierSection" class="field-row">
-            <label>Carrier image (optional)</label>
-            <input type="file" id="carrierInput" accept="image/png,image/jpeg">
-            <button id="carrierClear" class="mac-btn-action btn-ghost" style="display:none;margin-top:6px">✕ Clear carrier</button>
-            <div class="info-text" id="carrierInfo">Leave blank to use the generated white lattice image.</div>
-          </div>
-
           <!-- Advanced note -->
           <div id="advancedNote" style="display:none" class="field-row">
             <div class="advanced-note">
               On encode, 3–7 random orientations (0–359°) are chosen. The basis is rotated by R(θ) at each orientation and the full message is embedded there. The active orientations are shown on the compass. To decode, enter any one of the active degrees.
             </div>
           </div>
+        </div>
+
+        <!-- Carrier section (Basic + Lattice + Advanced; hidden in Stacking) -->
+        <div id="carrierSection" class="field-row">
+          <label>Carrier image (optional)</label>
+          <input type="file" id="carrierInput" accept="image/png,image/jpeg">
+          <button id="carrierClear" class="mac-btn-action btn-ghost" style="display:none;margin-top:6px">✕ Clear carrier</button>
+          <div class="info-text" id="carrierInfo">Leave blank to use the generated white lattice image.</div>
         </div>
 
         <hr class="mac-divider">
@@ -846,9 +907,9 @@
       const isAdvanced = mode === 'advanced';
       const isStacking = mode === 'stacking';
       document.getElementById('latticeParams').style.display =
-        (isLattice || isAdvanced || isStacking) ? '' : 'none';
+        (isLattice || isAdvanced) ? '' : 'none';
       document.getElementById('carrierSection').style.display =
-        isLattice ? '' : 'none';
+        isStacking ? 'none' : '';
       document.getElementById('advancedNote').style.display =
         isAdvanced ? '' : 'none';
       document.getElementById('advancedDecodeControls').style.display =
@@ -863,6 +924,22 @@
         drawCompass(document.getElementById('compassCanvas'), []);
         document.getElementById('compassHint').textContent = 'Encode in Advanced mode to see orientations';
       }
+
+      // Compass window visibility
+      const compassWin = document.querySelector('.window-compass');
+      const desktop = document.querySelector('.desktop');
+      compassWin.style.display = isAdvanced ? '' : 'none';
+      desktop.classList.toggle('compass-hidden', !isAdvanced);
+
+      // Mode descriptions
+      const descriptions = {
+        basic:    'Hide a secret message inside a generated image using a geometric grid. The simplest demonstration of the concept.',
+        lattice:  'The grid is defined by a 2×2 basis matrix — change any number and you get a completely different set of pixel coordinates. The matrix is the key.',
+        advanced: 'The lattice rotates. Each degree of tilt produces an independent set of pixel coordinates. Your message is hidden across multiple orientations — only the correct degree reveals it.',
+        stacking: 'The message is split across three cards using XOR secret sharing. Every card is meaningless alone. Together they reconstruct the secret.'
+      };
+      document.getElementById('modeDescription').textContent = descriptions[mode];
+
       updatePtCount();
     }
 
@@ -1002,6 +1079,7 @@
     document.querySelectorAll('input[name="mode"]').forEach(r =>
       r.addEventListener('change', updatePtCount));
     updatePtCount();
+    updateModeUI();
 
     // ── compass (restyled for dark theme) ────────────────────────────────────
 
