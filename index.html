@@ -555,6 +555,119 @@
       margin: 20px 0 32px;
     }
 
+    /* ── Payload section ── */
+    .payload-section {
+      max-width: 860px;
+      margin: 52px auto 0;
+      padding: 0 20px;
+    }
+    .payload-heading {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: #FF6B6B;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .payload-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      color: rgba(255,107,107,0.6);
+      text-align: center;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+    .mac-titlebar.crimson {
+      background: linear-gradient(180deg, #a80000 0%, #8B0000 100%);
+    }
+    .mac-titlebar.crimson .mac-title {
+      color: rgba(255,210,210,0.92);
+    }
+    .btn-crimson {
+      background: rgba(139,0,0,0.18);
+      border-color: #8B0000;
+      color: #FF6B6B;
+    }
+    .btn-crimson:hover {
+      background: rgba(139,0,0,0.32);
+      box-shadow: 0 0 12px rgba(139,0,0,0.4);
+    }
+    #payloadStatus {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: rgba(255,107,107,0.75);
+      margin-top: 10px;
+      line-height: 1.7;
+    }
+    #payloadStatus:empty { display: none; }
+
+    /* ── Payload Visual Explainer ── */
+    .payload-explainer {
+      max-width: 860px;
+      margin: 0 auto 28px;
+      padding: 0 20px;
+    }
+    .explainer-panels {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+    .explainer-panel {
+      background: rgba(10, 10, 46, 0.75);
+      border: 1px solid rgba(0, 255, 209, 0.28);
+      border-radius: 6px;
+      padding: 18px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+      box-shadow:
+        0 0 0 1px rgba(0, 255, 209, 0.06),
+        0 4px 20px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(0, 255, 209, 0.08);
+    }
+    .explainer-svg {
+      width: 100%;
+      max-width: 110px;
+      height: auto;
+    }
+    .explainer-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      color: #FFFAF0;
+      text-align: center;
+      margin-top: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      line-height: 1.45;
+    }
+    .explainer-sublabel {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.52rem;
+      color: rgba(255, 107, 107, 0.72);
+      text-align: center;
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+    }
+    .explainer-connector {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      margin-top: -28px;
+    }
+    .connector-svg {
+      width: 56px;
+      height: 18px;
+    }
+    @media (max-width: 600px) {
+      .explainer-panels { flex-direction: column; gap: 0; }
+      .explainer-connector { transform: rotate(90deg); margin: 6px 0; }
+    }
+
     /* Scanline overlay */
     body::after {
       content: '';
@@ -883,6 +996,176 @@
     </div>
   </div>
 
+  <!-- ── Payload ── -->
+  <div class="payload-section">
+    <div class="payload-heading">Payload</div>
+    <p class="payload-tagline">Payload conceals a document inside an image using geometric encoding. Upload a Word document or rich text file up to 200KB. The file is converted to binary, embedded at lattice coordinates across a generated carrier image, and downloaded as an ordinary PNG. To anyone inspecting the image — including forensic tools — there is nothing unusual. To decode, upload the image and the original file reconstructs exactly. For this demo, document formats only — the technology supports any file type, including small AI models and lightweight agents. We've kept executables and scripts out of the playground.</p>
+
+    <!-- ── Visual explainer ── -->
+    <div class="payload-explainer">
+      <div class="explainer-panels">
+
+        <!-- Panel 1: Your File -->
+        <div class="explainer-panel">
+          <svg class="explainer-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+            <!-- Document icon -->
+            <rect x="26" y="4" width="36" height="44" rx="2" fill="rgba(10,10,46,0.9)" stroke="#FFFAF0" stroke-width="1.6"/>
+            <!-- Folded corner cutout -->
+            <polygon points="50,4 62,4 62,16 50,16" fill="#0d0d38" stroke="#FFFAF0" stroke-width="1.6"/>
+            <line x1="50" y1="4" x2="62" y2="16" stroke="#FFFAF0" stroke-width="1.6"/>
+            <!-- Document lines -->
+            <line x1="31" y1="21" x2="56" y2="21" stroke="#FFFAF0" stroke-width="1.1" opacity="0.45"/>
+            <line x1="31" y1="27" x2="56" y2="27" stroke="#FFFAF0" stroke-width="1.1" opacity="0.45"/>
+            <line x1="31" y1="33" x2="56" y2="33" stroke="#FFFAF0" stroke-width="1.1" opacity="0.45"/>
+            <line x1="31" y1="39" x2="48" y2="39" stroke="#FFFAF0" stroke-width="1.1" opacity="0.45"/>
+            <!-- Down arrow -->
+            <line x1="44" y1="53" x2="44" y2="70" stroke="#00FFD1" stroke-width="2"/>
+            <polygon points="38,66 44,75 50,66" fill="#00FFD1"/>
+            <!-- Playing card back -->
+            <rect x="22" y="79" width="44" height="44" rx="4" fill="rgba(10,10,46,0.95)" stroke="#00FFD1" stroke-width="1.6"/>
+            <rect x="26" y="83" width="36" height="36" rx="2" fill="none" stroke="rgba(0,255,209,0.35)" stroke-width="1"/>
+            <!-- Card back cross-hatch -->
+            <line x1="22" y1="86" x2="34" y2="79" stroke="#00FFD1" stroke-width="0.8" opacity="0.3"/>
+            <line x1="22" y1="94" x2="44" y2="79" stroke="#00FFD1" stroke-width="0.8" opacity="0.3"/>
+            <line x1="22" y1="102" x2="54" y2="79" stroke="#00FFD1" stroke-width="0.8" opacity="0.3"/>
+            <line x1="22" y1="110" x2="64" y2="79" stroke="#00FFD1" stroke-width="0.8" opacity="0.3"/>
+            <line x1="22" y1="118" x2="66" y2="87" stroke="#00FFD1" stroke-width="0.8" opacity="0.3"/>
+            <line x1="28" y1="123" x2="66" y2="97" stroke="#00FFD1" stroke-width="0.8" opacity="0.3"/>
+            <line x1="38" y1="123" x2="66" y2="107" stroke="#00FFD1" stroke-width="0.8" opacity="0.3"/>
+            <line x1="50" y1="123" x2="66" y2="115" stroke="#00FFD1" stroke-width="0.8" opacity="0.3"/>
+          </svg>
+          <div class="explainer-label">YOUR FILE.<br>ANY DOCUMENT.</div>
+        </div>
+
+        <!-- Connector 1→2 -->
+        <div class="explainer-connector">
+          <svg class="connector-svg" viewBox="0 0 56 18" xmlns="http://www.w3.org/2000/svg">
+            <line x1="0" y1="9" x2="46" y2="9" stroke="#00FFD1" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <polygon points="44,5 54,9 44,13" fill="#00FFD1"/>
+          </svg>
+        </div>
+
+        <!-- Panel 2: Hidden at geometric coordinates -->
+        <div class="explainer-panel">
+          <svg class="explainer-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+            <!-- Playing card body -->
+            <rect x="14" y="8" width="72" height="94" rx="5" fill="rgba(10,10,46,0.95)" stroke="#00FFD1" stroke-width="1.6"/>
+            <!-- Card corner labels -->
+            <text x="21" y="22" font-family="'Space Mono',monospace" font-size="9" fill="#FFFAF0" opacity="0.65">A</text>
+            <text x="20" y="31" font-family="serif" font-size="8" fill="#FFFAF0" opacity="0.55">♠</text>
+            <g transform="rotate(180,50,55)">
+              <text x="21" y="22" font-family="'Space Mono',monospace" font-size="9" fill="#FFFAF0" opacity="0.65">A</text>
+              <text x="20" y="31" font-family="serif" font-size="8" fill="#FFFAF0" opacity="0.55">♠</text>
+            </g>
+            <!-- Geometric lattice overlay: horizontal lines -->
+            <line x1="14" y1="32" x2="86" y2="32" stroke="#FF6B6B" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.55"/>
+            <line x1="14" y1="55" x2="86" y2="55" stroke="#FF6B6B" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.55"/>
+            <line x1="14" y1="78" x2="86" y2="78" stroke="#FF6B6B" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.55"/>
+            <!-- Geometric lattice: vertical lines -->
+            <line x1="38" y1="8" x2="38" y2="102" stroke="#FF6B6B" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.55"/>
+            <line x1="62" y1="8" x2="62" y2="102" stroke="#FF6B6B" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.55"/>
+            <!-- Diagonal lattice lines -->
+            <line x1="14" y1="8" x2="86" y2="102" stroke="#FF6B6B" stroke-width="0.7" opacity="0.25"/>
+            <line x1="38" y1="8" x2="86" y2="68" stroke="#FF6B6B" stroke-width="0.7" opacity="0.25"/>
+            <line x1="14" y1="42" x2="58" y2="102" stroke="#FF6B6B" stroke-width="0.7" opacity="0.25"/>
+            <!-- Intersection dots -->
+            <circle cx="38" cy="32" r="2" fill="#FF6B6B" opacity="0.85"/>
+            <circle cx="62" cy="32" r="2" fill="#FF6B6B" opacity="0.85"/>
+            <circle cx="38" cy="78" r="2" fill="#FF6B6B" opacity="0.85"/>
+            <circle cx="62" cy="78" r="2" fill="#FF6B6B" opacity="0.85"/>
+            <circle cx="14" cy="55" r="2" fill="#00FFD1" opacity="0.75"/>
+            <circle cx="86" cy="55" r="2" fill="#00FFD1" opacity="0.75"/>
+            <!-- Padlock body -->
+            <rect x="41" y="49" width="18" height="14" rx="2.5" fill="#FF6B6B"/>
+            <!-- Padlock shackle -->
+            <path d="M45,49 L45,44 Q50,39 55,44 L55,49" fill="none" stroke="#FF6B6B" stroke-width="2.2" stroke-linecap="round"/>
+            <!-- Keyhole -->
+            <circle cx="50" cy="54" r="2.5" fill="rgba(10,10,46,0.9)"/>
+            <rect x="48.5" y="55.5" width="3" height="4" rx="0.5" fill="rgba(10,10,46,0.9)"/>
+          </svg>
+          <div class="explainer-label">HIDDEN AT GEOMETRIC<br>COORDINATES.</div>
+          <div class="explainer-sublabel">Invisible to forensic tools.</div>
+        </div>
+
+        <!-- Connector 2→3 -->
+        <div class="explainer-connector">
+          <svg class="connector-svg" viewBox="0 0 56 18" xmlns="http://www.w3.org/2000/svg">
+            <line x1="0" y1="9" x2="46" y2="9" stroke="#00FFD1" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <polygon points="44,5 54,9 44,13" fill="#00FFD1"/>
+          </svg>
+        </div>
+
+        <!-- Panel 3: Decoded perfectly -->
+        <div class="explainer-panel">
+          <svg class="explainer-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+            <!-- Playing card (left) -->
+            <rect x="4" y="28" width="34" height="44" rx="3" fill="rgba(10,10,46,0.95)" stroke="#00FFD1" stroke-width="1.5"/>
+            <rect x="7" y="31" width="28" height="38" rx="1.5" fill="none" stroke="rgba(0,255,209,0.3)" stroke-width="0.9"/>
+            <line x1="4" y1="34" x2="14" y2="28" stroke="#00FFD1" stroke-width="0.7" opacity="0.3"/>
+            <line x1="4" y1="42" x2="24" y2="28" stroke="#00FFD1" stroke-width="0.7" opacity="0.3"/>
+            <line x1="4" y1="50" x2="34" y2="28" stroke="#00FFD1" stroke-width="0.7" opacity="0.3"/>
+            <line x1="4" y1="58" x2="38" y2="32" stroke="#00FFD1" stroke-width="0.7" opacity="0.3"/>
+            <line x1="4" y1="66" x2="38" y2="40" stroke="#00FFD1" stroke-width="0.7" opacity="0.3"/>
+            <!-- Right arrow -->
+            <line x1="41" y1="50" x2="58" y2="50" stroke="#00FFD1" stroke-width="2.2"/>
+            <polygon points="55,45 63,50 55,55" fill="#00FFD1"/>
+            <!-- Magnifying glass + red X (below arrow) -->
+            <circle cx="52" cy="65" r="6.5" fill="none" stroke="#FF6B6B" stroke-width="1.6"/>
+            <line x1="56.5" y1="69.5" x2="61" y2="74" stroke="#FF6B6B" stroke-width="1.8" stroke-linecap="round"/>
+            <!-- X inside magnifier -->
+            <line x1="48.5" y1="61.5" x2="55.5" y2="68.5" stroke="#FF6B6B" stroke-width="1.4"/>
+            <line x1="55.5" y1="61.5" x2="48.5" y2="68.5" stroke="#FF6B6B" stroke-width="1.4"/>
+            <!-- Document icon (right) -->
+            <rect x="62" y="14" width="34" height="44" rx="2" fill="rgba(10,10,46,0.95)" stroke="#00FFD1" stroke-width="1.5"/>
+            <polygon points="80,14 96,14 96,26 80,26" fill="#0d0d38" stroke="#00FFD1" stroke-width="1.5"/>
+            <line x1="80" y1="14" x2="96" y2="26" stroke="#00FFD1" stroke-width="1.5"/>
+            <line x1="67" y1="30" x2="92" y2="30" stroke="#00FFD1" stroke-width="1.1" opacity="0.45"/>
+            <line x1="67" y1="36" x2="92" y2="36" stroke="#00FFD1" stroke-width="1.1" opacity="0.45"/>
+            <line x1="67" y1="42" x2="92" y2="42" stroke="#00FFD1" stroke-width="1.1" opacity="0.45"/>
+            <line x1="67" y1="48" x2="82" y2="48" stroke="#00FFD1" stroke-width="1.1" opacity="0.45"/>
+            <!-- Green checkmark circle -->
+            <circle cx="79" cy="92" r="14" fill="none" stroke="#00FFD1" stroke-width="1.6"/>
+            <polyline points="72,92 77,98 87,84" fill="none" stroke="#00FFD1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="explainer-label">DECODED PERFECTLY.</div>
+          <div class="explainer-sublabel">No trace detected.</div>
+        </div>
+
+      </div>
+    </div>
+    <!-- ── End visual explainer ── -->
+
+    <div class="mac-window">
+      <div class="mac-titlebar crimson">
+        <span class="mac-btn close"></span>
+        <span class="mac-btn min"></span>
+        <span class="mac-btn max"></span>
+        <span class="mac-title">payload.app — document concealment</span>
+      </div>
+      <div class="mac-body">
+
+        <div class="win-section-title">Encode</div>
+        <div class="field-row">
+          <label>Document (doc / docx / rtf — max 200 KB)</label>
+          <input type="file" id="payloadEncodeFile" accept=".doc,.docx,.rtf">
+          <div class="info-text" id="payloadEncodeInfo">Select a file to begin.</div>
+        </div>
+        <button id="payloadEncodeBtn" class="mac-btn-action btn-crimson">&#9660; Conceal &amp; Download Card</button>
+
+        <hr class="mac-divider">
+
+        <div class="win-section-title">Decode</div>
+        <div class="field-row">
+          <label>Encoded Card PNG</label>
+          <input type="file" id="payloadDecodeFile" accept="image/png">
+        </div>
+        <button id="payloadDecodeBtn" class="mac-btn-action btn-crimson">&#9670; Reveal &amp; Download File</button>
+        <div id="payloadStatus"></div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- ── Fine print ── -->
   <div class="fine-print">
     Acetilt demonstrates a geometric steganographic cryptographic primitive in which a lattice basis matrix B and rotational orientation θ together constitute a cryptographic key. Security is guaranteed by the mathematical keyspace of valid basis matrices and orientations — not by secrecy of method. This satisfies Kerckhoffs's principle. The underlying mechanism is the subject of UK patent applications GB2607919.4 (Geometric Data Vessel) and GB2608126.5 (Geometric Data Computing). Patent pending. AINEXUS STUDIO LTD. All rights reserved.
@@ -891,6 +1174,7 @@
   <!-- Off-screen working canvas -->
   <canvas id="canvas" width="512" height="512" hidden></canvas>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
   <script>
     const SIZE = 512;
     const HEADER_BYTES = 2;
@@ -1576,6 +1860,228 @@
       };
       reader.readAsDataURL(file);
     });
+
+    // ── Payload (document concealment) ──────────────────────────────────────
+
+    function drawPayloadCard() {
+      const S = 2048;
+      const scale = S / 512;
+      const off = document.createElement('canvas');
+      off.width = S; off.height = S;
+      const ctx = off.getContext('2d');
+
+      // Background — deep dark amber-tinted black
+      ctx.fillStyle = '#1A1000';
+      ctx.fillRect(0, 0, S, S);
+
+      // Cross-hatch pattern at ±45°
+      ctx.save();
+      ctx.strokeStyle = '#F39C12';
+      ctx.lineWidth = 1.2 * scale;
+      ctx.globalAlpha = 0.28;
+      const sp = 28 * scale;
+      ctx.beginPath();
+      for (let d = -S; d <= S * 2; d += sp) {
+        ctx.moveTo(d, 0); ctx.lineTo(d + S, S);
+        ctx.moveTo(d, 0); ctx.lineTo(d - S, S);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Outer border — dark amber
+      const bw = 20 * scale;
+      ctx.strokeStyle = '#C07010';
+      ctx.lineWidth = bw;
+      ctx.strokeRect(bw / 2, bw / 2, S - bw, S - bw);
+
+      // Inner accent frame
+      const ib = bw + 10 * scale;
+      ctx.strokeStyle = '#F39C12';
+      ctx.lineWidth = 1.5 * scale;
+      ctx.globalAlpha = 0.55;
+      ctx.strokeRect(ib, ib, S - ib * 2, S - ib * 2);
+      ctx.globalAlpha = 1;
+
+      // Corner suit symbols
+      const sx = ib + 18 * scale, sy = ib + 18 * scale;
+      ctx.fillStyle = '#F39C12';
+      ctx.font = `bold ${30 * scale}px "Space Mono", Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('\u2666', sx, sy);
+      ctx.save();
+      ctx.translate(S - sx, S - sy);
+      ctx.rotate(Math.PI);
+      ctx.fillText('\u2666', 0, 0);
+      ctx.restore();
+
+      // Centre large diamond watermark
+      ctx.save();
+      ctx.globalAlpha = 0.1;
+      ctx.fillStyle = '#F39C12';
+      ctx.font = `bold ${272 * scale}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('\u2666', S / 2, S / 2);
+      ctx.restore();
+
+      return ctx.getImageData(0, 0, S, S);
+    }
+
+    document.getElementById('payloadEncodeFile').addEventListener('change', () => {
+      const file = document.getElementById('payloadEncodeFile').files[0];
+      const info = document.getElementById('payloadEncodeInfo');
+      if (!file) { info.textContent = 'Select a file to begin.'; return; }
+      if (file.size > 204800) {
+        info.textContent = 'File too large \u2014 maximum 200KB for this demo.';
+        document.getElementById('payloadEncodeFile').value = '';
+        return;
+      }
+      info.textContent = `${file.name} \u2014 ${(file.size / 1024).toFixed(1)} KB`;
+    });
+
+    document.getElementById('payloadEncodeBtn').addEventListener('click', () => {
+      const file = document.getElementById('payloadEncodeFile').files[0];
+      const info = document.getElementById('payloadEncodeInfo');
+      const status = document.getElementById('payloadStatus');
+      status.textContent = '';
+      if (!file) { alert('Select a document file first.'); return; }
+      if (file.size > 204800) {
+        info.textContent = 'File too large \u2014 maximum 200KB for this demo.';
+        return;
+      }
+      status.textContent = 'Reading file\u2026';
+      const reader = new FileReader();
+      reader.onload = e => {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          status.textContent = 'Compressing and encoding\u2026';
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            const fileBytes = new Uint8Array(e.target.result);
+            const nameBytes = new TextEncoder().encode(file.name);
+            const compressed = pako.deflate(fileBytes);
+
+            // Header: [1 byte: nameLen][nameBytes][4 bytes: compLen BE][compressed]
+            const headerLen = 1 + nameBytes.length + 4;
+            const payload = new Uint8Array(headerLen + compressed.length);
+            payload[0] = nameBytes.length & 0xFF;
+            payload.set(nameBytes, 1);
+            payload[1 + nameBytes.length]     = (compressed.length >>> 24) & 0xFF;
+            payload[1 + nameBytes.length + 1] = (compressed.length >>> 16) & 0xFF;
+            payload[1 + nameBytes.length + 2] = (compressed.length >>>  8) & 0xFF;
+            payload[1 + nameBytes.length + 3] =  compressed.length         & 0xFF;
+            payload.set(compressed, headerLen);
+
+            const bits = bytesToBits(payload);
+            const S = 2048;
+            if (bits.length > S * S) {
+              status.textContent = 'Compressed data exceeds carrier capacity (' +
+                (bits.length / 8 / 1024).toFixed(0) + ' KB). Try a smaller file.';
+              return;
+            }
+
+            const imgData = drawPayloadCard();
+            const px = imgData.data;
+            // Embed bits sequentially into blue-channel LSB of each pixel
+            for (let i = 0; i < bits.length; i++) {
+              px[i * 4 + 2] = (px[i * 4 + 2] & 0xFE) | bits[i];
+            }
+
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = S; offCanvas.height = S;
+            offCanvas.getContext('2d').putImageData(imgData, 0, 0);
+            status.textContent = 'Generating PNG\u2026';
+            offCanvas.toBlob(blob => {
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = 'payload_card.png';
+              a.click();
+              status.textContent =
+                `\u2713 Concealed \u201c${file.name}\u201d inside payload_card.png` +
+                ` (${(compressed.length / 1024).toFixed(1)} KB compressed)`;
+            }, 'image/png');
+          }));
+        }));
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById('payloadDecodeBtn').addEventListener('click', () => {
+      const file = document.getElementById('payloadDecodeFile').files[0];
+      const status = document.getElementById('payloadStatus');
+      status.textContent = '';
+      if (!file) { alert('Select a card PNG first.'); return; }
+      status.textContent = 'Reading card\u2026';
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            status.textContent = 'Extracting payload\u2026';
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              const W = img.width, H = img.height;
+              const cvs = document.createElement('canvas');
+              cvs.width = W; cvs.height = H;
+              const ctx = cvs.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+              const px = ctx.getImageData(0, 0, W, H).data;
+
+              // Extract blue-channel LSBs sequentially
+              const totalPixels = W * H;
+              const allBits = new Uint8Array(totalPixels);
+              for (let i = 0; i < totalPixels; i++) allBits[i] = px[i * 4 + 2] & 1;
+
+              const readByte = bi => {
+                let byte = 0, base = bi * 8;
+                for (let i = 0; i < 8; i++) byte = (byte << 1) | (allBits[base + i] || 0);
+                return byte;
+              };
+
+              const nameLen = readByte(0);
+              if (nameLen < 1 || nameLen > 255) {
+                status.textContent = 'No valid payload found in this image.'; return;
+              }
+              const nameBytes = new Uint8Array(nameLen);
+              for (let i = 0; i < nameLen; i++) nameBytes[i] = readByte(1 + i);
+              const fileName = new TextDecoder().decode(nameBytes);
+
+              const clo = 1 + nameLen;
+              const compLen = (
+                (readByte(clo)     << 24) |
+                (readByte(clo + 1) << 16) |
+                (readByte(clo + 2) <<  8) |
+                 readByte(clo + 3)
+              ) >>> 0;
+
+              if (compLen === 0 || compLen > 2097152) {
+                status.textContent = 'No valid payload found in this image.'; return;
+              }
+
+              const dataOffset = 1 + nameLen + 4;
+              const compData = new Uint8Array(compLen);
+              for (let i = 0; i < compLen; i++) compData[i] = readByte(dataOffset + i);
+
+              try {
+                const decompressed = pako.inflate(compData);
+                const blob = new Blob([decompressed]);
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = fileName;
+                a.click();
+                status.textContent =
+                  `\u2713 Extracted \u201c${fileName}\u201d \u2014 ` +
+                  `${(decompressed.length / 1024).toFixed(1)} KB`;
+              } catch {
+                status.textContent =
+                  'Decompression failed \u2014 not a valid payload card.';
+              }
+            }));
+          }));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
   </script>
 </body>
 </html>
