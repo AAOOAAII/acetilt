@@ -2,70 +2,642 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Lattice Steganography</title>
+  <title>Acetilt — Geometric Cryptography</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Dithered dark navy background ── */
+    body {
+      min-height: 100vh;
+      background-color: #0A0A2E;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' x='0' y='0' fill='%230d0d38' opacity='0.6'/%3E%3Crect width='1' height='1' x='2' y='2' fill='%23080820' opacity='0.6'/%3E%3C/svg%3E");
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #FFFAF0;
+      padding: 0 0 60px;
+      overflow-x: hidden;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 52px 24px 36px;
+      position: relative;
+    }
+    .hero-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(2rem, 6vw, 3.6rem);
+      font-weight: 700;
+      color: #00FFD1;
+      letter-spacing: -1px;
+      text-shadow: 0 0 24px rgba(0,255,209,0.35);
+      line-height: 1.1;
+    }
+    .hero-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(0.75rem, 2vw, 1rem);
+      color: #FFFAF0;
+      opacity: 0.7;
+      margin-top: 10px;
+      letter-spacing: 0.08em;
+    }
+    .hero-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(0.65rem, 1.5vw, 0.82rem);
+      color: #00FFD1;
+      opacity: 0.5;
+      margin-top: 6px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    /* ── Encryption vs. geometric copy line ── */
+    .hero-distinction {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(0.82rem, 1.8vw, 1.05rem);
+      color: #00FFD1;
+      text-align: center;
+      max-width: 720px;
+      margin: 28px auto 32px;
+      padding: 0 24px;
+      line-height: 1.6;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Card deck line ── */
+    .card-deck-bar {
+      max-width: 860px;
+      margin: 0 auto 36px;
+      padding: 18px 28px;
+      background: rgba(0,255,209,0.05);
+      border: 1px solid rgba(0,255,209,0.18);
+      border-left: 3px solid #00FFD1;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      color: #FFFAF0;
+      opacity: 0.85;
+      line-height: 1.7;
+    }
+
+    /* ── Mac-style window chrome ── */
+    .mac-window {
+      background: #f0ede8;
+      border-radius: 6px 6px 4px 4px;
+      box-shadow:
+        0 0 0 1px #2a2a5a,
+        0 8px 32px rgba(0,0,0,0.55),
+        0 2px 8px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.15);
+      overflow: hidden;
+      color: #1a1a2e;
+    }
+
+    .mac-titlebar {
+      height: 26px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 7px;
+      position: relative;
+      user-select: none;
+    }
+    .mac-titlebar.teal   { background: linear-gradient(180deg, #00e8be 0%, #00c9a5 100%); }
+    .mac-titlebar.coral  { background: linear-gradient(180deg, #ff7e7e 0%, #ff5a5a 100%); }
+    .mac-titlebar.amber  { background: linear-gradient(180deg, #ffcc44 0%, #ffaa22 100%); }
+
+    .mac-btn {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+    .mac-btn.close  { background: #ff5f57; }
+    .mac-btn.min    { background: #febc2e; }
+    .mac-btn.max    { background: #28c840; }
+
+    .mac-title {
+      position: absolute;
+      left: 50%; transform: translateX(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(10,10,46,0.85);
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .mac-body {
+      background: #1a1a3e;
+      padding: 20px 22px 22px;
+      border-top: 2px solid rgba(0,0,0,0.35);
+    }
+
+    /* ── Desktop layout ── */
+    .desktop {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 22px;
+    }
+    .window-controls { grid-column: 1; grid-row: 1; }
+    .window-compass  { grid-column: 2; grid-row: 1; }
+    .window-output   { grid-column: 1 / -1; grid-row: 2; }
+
+    @media (max-width: 700px) {
+      .desktop { grid-template-columns: 1fr; }
+      .window-controls, .window-compass, .window-output { grid-column: 1; grid-row: auto; }
+    }
+
+    /* ── Form elements ── */
+    label {
+      display: block;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: #00FFD1;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .field-row { margin-bottom: 16px; }
+
+    .radio-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .radio-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border: 1px solid rgba(0,255,209,0.3);
+      border-radius: 2px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: #FFFAF0;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .radio-chip:has(input:checked) {
+      border-color: #00FFD1;
+      background: rgba(0,255,209,0.12);
+      color: #00FFD1;
+    }
+    .radio-chip input { accent-color: #00FFD1; }
+
+    input[type="text"], input[type="number"], input[type="file"] {
+      background: #0f0f2b;
+      border: 1px solid rgba(0,255,209,0.25);
+      border-radius: 2px;
+      color: #FFFAF0;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      padding: 7px 10px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.15s;
+    }
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: #00FFD1;
+      box-shadow: 0 0 0 2px rgba(0,255,209,0.12);
+    }
+    input[type="file"] { cursor: pointer; padding: 6px 8px; }
+    input[type="number"] { width: 60px; text-align: center; }
+
+    /* Basis matrix */
+    .basis-grid {
+      display: inline-grid;
+      grid-template-columns: 60px 60px;
+      gap: 5px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(0,255,209,0.2);
+      padding: 8px;
+      border-radius: 2px;
+      margin-bottom: 6px;
+    }
+    .basis-grid input { margin: 0; }
+    .pt-count {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: rgba(0,255,209,0.6);
+      margin-top: 4px;
+    }
+
+    /* Buttons */
+    .mac-btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: 2px;
+      border: 1px solid;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.12s;
+      text-transform: uppercase;
+    }
+    .btn-teal {
+      background: rgba(0,255,209,0.12);
+      border-color: #00FFD1;
+      color: #00FFD1;
+    }
+    .btn-teal:hover {
+      background: rgba(0,255,209,0.22);
+      box-shadow: 0 0 12px rgba(0,255,209,0.25);
+    }
+    .btn-coral {
+      background: rgba(255,107,107,0.12);
+      border-color: #FF6B6B;
+      color: #FF6B6B;
+    }
+    .btn-coral:hover {
+      background: rgba(255,107,107,0.22);
+      box-shadow: 0 0 12px rgba(255,107,107,0.25);
+    }
+    .btn-ghost {
+      background: transparent;
+      border-color: rgba(255,250,240,0.2);
+      color: rgba(255,250,240,0.5);
+      font-size: 0.68rem;
+      padding: 5px 10px;
+    }
+    .btn-ghost:hover { border-color: rgba(255,250,240,0.4); color: #FFFAF0; }
+
+    /* Divider */
+    .mac-divider {
+      border: none;
+      border-top: 1px solid rgba(0,255,209,0.12);
+      margin: 16px 0;
+    }
+
+    /* Section heading inside window */
+    .win-section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: #FF6B6B;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .win-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,107,107,0.2);
+    }
+
+    /* Info / status text */
+    .info-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: rgba(255,250,240,0.45);
+      line-height: 1.6;
+      margin-top: 5px;
+    }
+
+    /* Advanced note */
+    .advanced-note {
+      background: rgba(255,107,107,0.07);
+      border: 1px solid rgba(255,107,107,0.2);
+      border-radius: 2px;
+      padding: 10px 12px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: rgba(255,250,240,0.6);
+      line-height: 1.7;
+    }
+
+    /* Decoded output */
+    #decoded {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      color: #00FFD1;
+      background: rgba(0,255,209,0.06);
+      border: 1px solid rgba(0,255,209,0.2);
+      border-radius: 2px;
+      padding: 10px 14px;
+      min-height: 42px;
+      word-break: break-all;
+      margin-top: 8px;
+    }
+    #decoded:empty { display: none; }
+
+    /* Canvas preview */
+    #previewCanvas {
+      display: none;
+      border: 1px solid rgba(0,255,209,0.2);
+      border-radius: 2px;
+      max-width: 100%;
+      margin-top: 12px;
+    }
+
+    /* Compass canvas */
+    #compassCanvas {
+      display: block;
+      border: 1px solid rgba(0,255,209,0.18);
+      border-radius: 50%;
+      background: #0f0f2b;
+    }
+    #compassWrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+    }
+    .compass-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.66rem;
+      color: rgba(0,255,209,0.5);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Enterprise teaser */
+    .enterprise-teaser {
+      max-width: 860px;
+      margin: 36px auto 0;
+      padding: 24px 28px;
+      border: 1px dashed rgba(255,107,107,0.3);
+      border-radius: 4px;
+      background: rgba(255,107,107,0.04);
+      text-align: center;
+    }
+    .enterprise-teaser h3 {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      color: #FF6B6B;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .enterprise-teaser p {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: rgba(255,250,240,0.6);
+      line-height: 1.7;
+    }
+    .coming-soon-badge {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 14px;
+      border: 1px solid rgba(255,107,107,0.4);
+      border-radius: 2px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: #FF6B6B;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    /* Fine print */
+    .fine-print {
+      max-width: 860px;
+      margin: 32px auto 0;
+      padding: 0 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      color: rgba(255,250,240,0.28);
+      line-height: 1.8;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+    .fine-print a { color: inherit; }
+
+    /* Pixel-art decorative border on hero */
+    .pixel-border {
+      width: 100%;
+      height: 3px;
+      background: repeating-linear-gradient(
+        90deg,
+        #00FFD1 0px, #00FFD1 4px,
+        transparent 4px, transparent 8px,
+        #FF6B6B 8px, #FF6B6B 12px,
+        transparent 12px, transparent 16px
+      );
+      opacity: 0.5;
+      margin: 20px 0 32px;
+    }
+
+    /* Scanline overlay */
+    body::after {
+      content: '';
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.04) 2px,
+        rgba(0,0,0,0.04) 4px
+      );
+      z-index: 9999;
+    }
+  </style>
 </head>
 <body>
-  <h1>Lattice Steganography</h1>
 
-  <p>
-    Mode:
-    <label><input type="radio" name="mode" value="basic"> Basic</label>
-    <label><input type="radio" name="mode" value="lattice" id="modeLattice" checked> Lattice</label>
-  </p>
+  <!-- ── Hero ── -->
+  <div class="hero">
+    <div class="hero-logo">Acetilt</div>
+    <div class="hero-sub">Geometric Cryptography</div>
+    <div class="hero-tagline">The key is not a password. The key is geometry.</div>
+  </div>
+  <div class="pixel-border"></div>
 
-  <div id="latticeParams">
-    <p>
-      Basis matrix B (key) — columns b<sub>1</sub>, b<sub>2</sub> define the lattice:
-      <br>
-      <table style="border-collapse:collapse;display:inline-table;margin-top:4px">
-        <tr>
-          <td style="padding:2px"><input type="number" id="b00" value="16" style="width:52px"></td>
-          <td style="padding:2px"><input type="number" id="b01" value="4"  style="width:52px"></td>
-        </tr>
-        <tr>
-          <td style="padding:2px"><input type="number" id="b10" value="4"  style="width:52px"></td>
-          <td style="padding:2px"><input type="number" id="b11" value="16" style="width:52px"></td>
-        </tr>
-      </table>
-      &nbsp;<span id="ptCount" style="font-size:0.9em;color:#555"></span>
-    </p>
-    <p style="margin-top:0">
-      Carrier image (optional):
-      <input type="file" id="carrierInput" accept="image/png,image/jpeg">
-      <button id="carrierClear" style="display:none;font-size:0.85em">Clear</button>
-      <br>
-      <span id="carrierInfo" style="font-size:0.85em;color:#555">Leave blank to use the generated white lattice image.</span>
-    </p>
+  <p class="hero-distinction">Encryption hides the contents of a message. Geometric cryptography hides the existence of it.</p>
+
+  <!-- ── Card deck line ── -->
+  <div class="card-deck-bar">
+    A shuffled deck of 52 cards has never been arranged the same way twice in human history. 8×10<sup>67</sup> possible combinations. One image. 360 orientations. The same principle.
   </div>
 
-  <h2>Encode</h2>
-  <input type="text" id="messageInput" placeholder="Secret message">
-  <button id="encodeBtn">Encode &amp; Download PNG</button>
-  <br><br>
-  <canvas id="previewCanvas" width="512" height="512" style="display:none;border:1px solid #999;max-width:512px"></canvas>
+  <!-- ── Desktop windows ── -->
+  <div class="desktop">
 
-  <h2>Decode</h2>
-  <input type="file" id="pngInput" accept="image/png">
-  <button id="decodeBtn">Decode</button>
-  <p id="decoded"></p>
+    <!-- Window: Controls -->
+    <div class="mac-window window-controls">
+      <div class="mac-titlebar teal">
+        <span class="mac-btn close"></span>
+        <span class="mac-btn min"></span>
+        <span class="mac-btn max"></span>
+        <span class="mac-title">acetilt.app — controls</span>
+      </div>
+      <div class="mac-body">
+
+        <!-- Mode -->
+        <div class="field-row">
+          <label>Mode</label>
+          <div class="radio-group">
+            <label class="radio-chip"><input type="radio" name="mode" value="basic"> Basic</label>
+            <label class="radio-chip"><input type="radio" name="mode" value="lattice" id="modeLattice" checked> Lattice</label>
+            <label class="radio-chip"><input type="radio" name="mode" value="advanced" id="modeAdvanced"> Advanced</label>
+          </div>
+        </div>
+
+        <!-- Lattice params -->
+        <div id="latticeParams">
+          <div class="field-row">
+            <label>Basis matrix B — key geometry</label>
+            <div class="basis-grid">
+              <input type="number" id="b00" value="16">
+              <input type="number" id="b01" value="4">
+              <input type="number" id="b10" value="4">
+              <input type="number" id="b11" value="16">
+            </div>
+            <div class="pt-count" id="ptCount"></div>
+          </div>
+
+          <!-- Carrier section -->
+          <div id="carrierSection" class="field-row">
+            <label>Carrier image (optional)</label>
+            <input type="file" id="carrierInput" accept="image/png,image/jpeg">
+            <button id="carrierClear" class="mac-btn-action btn-ghost" style="display:none;margin-top:6px">✕ Clear carrier</button>
+            <div class="info-text" id="carrierInfo">Leave blank to use the generated white lattice image.</div>
+          </div>
+
+          <!-- Advanced note -->
+          <div id="advancedNote" style="display:none" class="field-row">
+            <div class="advanced-note">
+              On encode, 3–7 random orientations (0–359°) are chosen. The basis is rotated by R(θ) at each orientation and the full message is embedded there. The active orientations are shown on the compass. To decode, enter any one of the active degrees.
+            </div>
+          </div>
+        </div>
+
+        <hr class="mac-divider">
+
+        <!-- Encode -->
+        <div class="win-section-title">Encode</div>
+        <div class="field-row">
+          <label>Secret message</label>
+          <input type="text" id="messageInput" placeholder="Enter message to encode…">
+        </div>
+        <button id="encodeBtn" class="mac-btn-action btn-teal">&#9660; Encode &amp; Download PNG</button>
+
+        <canvas id="previewCanvas" width="512" height="512"></canvas>
+
+        <hr class="mac-divider">
+
+        <!-- Decode -->
+        <div class="win-section-title">Decode</div>
+        <div class="field-row">
+          <label>Encoded PNG</label>
+          <input type="file" id="pngInput" accept="image/png">
+        </div>
+        <div id="advancedDecodeControls" style="display:none" class="field-row">
+          <label>Orientation degree (0–359)</label>
+          <input type="number" id="degreeInput" min="0" max="359" placeholder="42">
+        </div>
+        <button id="decodeBtn" class="mac-btn-action btn-coral">&#9670; Decode</button>
+        <div id="decoded"></div>
+
+      </div>
+    </div><!-- /window-controls -->
+
+    <!-- Window: Compass -->
+    <div class="mac-window window-compass">
+      <div class="mac-titlebar coral">
+        <span class="mac-btn close"></span>
+        <span class="mac-btn min"></span>
+        <span class="mac-btn max"></span>
+        <span class="mac-title">orientation compass</span>
+      </div>
+      <div class="mac-body">
+        <div id="compassWrapper">
+          <div class="compass-label">Active orientations</div>
+          <canvas id="compassCanvas" width="260" height="260"></canvas>
+          <div class="compass-label" id="compassHint">Encode in Advanced mode to see orientations</div>
+        </div>
+      </div>
+    </div><!-- /window-compass -->
+
+    <!-- Window: Output info -->
+    <div class="mac-window window-output">
+      <div class="mac-titlebar amber">
+        <span class="mac-btn close"></span>
+        <span class="mac-btn min"></span>
+        <span class="mac-btn max"></span>
+        <span class="mac-title">system — readme</span>
+      </div>
+      <div class="mac-body" style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
+        <div>
+          <div class="win-section-title">How it works</div>
+          <p style="font-family:'Space Mono',monospace;font-size:0.72rem;line-height:1.8;color:rgba(255,250,240,0.65)">
+            Acetilt encodes a secret message into the least-significant bits of a carrier image's blue channel at pixel locations defined by a lattice — a periodic grid generated from a 2×2 integer matrix <strong style="color:#00FFD1">B</strong>.<br><br>
+            In <strong style="color:#00FFD1">Advanced mode</strong>, the lattice is also rotated by an angle <strong style="color:#FF6B6B">θ</strong>. Recovery requires <em>both</em> B and θ. Neither alone is sufficient.
+          </p>
+        </div>
+        <div>
+          <div class="win-section-title">Keyspace</div>
+          <p style="font-family:'Space Mono',monospace;font-size:0.72rem;line-height:1.8;color:rgba(255,250,240,0.65)">
+            The cryptographic key is the pair <strong style="color:#00FFD1">(B, θ)</strong>. Security arises from the combinatorial explosion of valid basis matrices and the 360 discrete orientations — not from secrecy of the algorithm.<br><br>
+            This satisfies <strong style="color:#FF6B6B">Kerckhoffs's principle</strong>: the method is public; only the key need be secret.
+          </p>
+        </div>
+      </div>
+    </div><!-- /window-output -->
+
+  </div><!-- /desktop -->
+
+  <!-- ── Enterprise teaser ── -->
+  <div class="enterprise-teaser">
+    <h3>Enterprise mode</h3>
+    <p>Multiple image stacks. Each decoded by correct orientation sequence. The key is not a password. The key is geometry.</p>
+    <div class="coming-soon-badge">Coming soon</div>
+  </div>
+
+  <!-- ── Fine print ── -->
+  <div class="fine-print">
+    Acetilt demonstrates a geometric steganographic cryptographic primitive in which a lattice basis matrix B and rotational orientation θ together constitute a cryptographic key. Security is guaranteed by the mathematical keyspace of valid basis matrices and orientations — not by secrecy of method. This satisfies Kerckhoffs's principle. The underlying mechanism is the subject of UK patent applications GB2607919.4 (Geometric Data Vessel) and GB2608126.5 (Geometric Data Computing). Patent pending. AINEXUS STUDIO LTD. All rights reserved.
+  </div>
 
   <!-- Off-screen working canvas -->
   <canvas id="canvas" width="512" height="512" hidden></canvas>
 
   <script>
     const SIZE = 512;
-    const HEADER_BYTES = 2;   // big-endian uint16 message length
+    const HEADER_BYTES = 2;
 
-    // ── mode toggle ──────────────────────────────────────────────────────────
+    let advancedOrientations = null;
 
-    document.querySelectorAll('input[name="mode"]').forEach(r => {
-      r.addEventListener('change', () => {
-        document.getElementById('latticeParams').style.display =
-          document.getElementById('modeLattice').checked ? '' : 'none';
-      });
-    });
+    function getMode() {
+      return document.querySelector('input[name="mode"]:checked').value;
+    }
 
-    // ── carrier image picker ─────────────────────────────────────────────────
+    function updateModeUI() {
+      const mode = getMode();
+      const isLattice  = mode === 'lattice';
+      const isAdvanced = mode === 'advanced';
+      document.getElementById('latticeParams').style.display =
+        (isLattice || isAdvanced) ? '' : 'none';
+      document.getElementById('carrierSection').style.display =
+        isLattice ? '' : 'none';
+      document.getElementById('advancedNote').style.display =
+        isAdvanced ? '' : 'none';
+      document.getElementById('advancedDecodeControls').style.display =
+        isAdvanced ? '' : 'none';
+      if (!isAdvanced) {
+        drawCompass(document.getElementById('compassCanvas'), []);
+        document.getElementById('compassHint').textContent = 'Encode in Advanced mode to see orientations';
+      }
+      updatePtCount();
+    }
+
+    document.querySelectorAll('input[name="mode"]').forEach(r =>
+      r.addEventListener('change', updateModeUI));
 
     document.getElementById('carrierInput').addEventListener('change', () => {
       const file = document.getElementById('carrierInput').files[0];
@@ -82,8 +654,7 @@
           } else {
             const pts = getLatticePoints(B, img.width, img.height);
             const maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
-            info.textContent =
-              `${img.width}×${img.height} px — ${pts.length} lattice points → max ${maxMsg} bytes`;
+            info.textContent = `${img.width}×${img.height} px — ${pts.length} lattice points → max ${maxMsg} bytes`;
           }
           document.getElementById('carrierClear').style.display = '';
         };
@@ -95,12 +666,9 @@
     document.getElementById('carrierClear').addEventListener('click', () => {
       document.getElementById('carrierInput').value = '';
       document.getElementById('carrierClear').style.display = 'none';
-      document.getElementById('carrierInfo').textContent =
-        'Leave blank to use the generated white lattice image.';
+      document.getElementById('carrierInfo').textContent = 'Leave blank to use the generated white lattice image.';
       updatePtCount();
     });
-
-    // ── helpers ────────────────────────────────────────────────────────────
 
     function bytesToBits(bytes) {
       const bits = [];
@@ -119,21 +687,14 @@
       ];
     }
 
-    // Return all lattice points inside [0, width) × [0, height).
-    // B is a 2×2 matrix; column vectors are the basis:
-    //   b1 = (B[0][0], B[1][0])   b2 = (B[0][1], B[1][1])
-    // Lattice = { n1·b1 + n2·b2  |  n1, n2 ∈ ℤ } ∩ image bounds
-    // Result is sorted row-major (y then x) for a canonical bit order.
     function getLatticePoints(B, width, height) {
       const b1x = B[0][0], b1y = B[1][0];
       const b2x = B[0][1], b2y = B[1][1];
-
       const maxCoord = Math.max(width, height);
       const nonzero = [b1x, b1y, b2x, b2y].filter(v => v !== 0).map(Math.abs);
       if (nonzero.length === 0) return [];
       const minStep = Math.min(...nonzero);
       const range = Math.ceil(maxCoord / minStep) + 2;
-
       const seen = new Set();
       const pts = [];
       for (let n1 = -range; n1 <= range; n1++) {
@@ -142,10 +703,7 @@
           const y = n1 * b1y + n2 * b2y;
           if (x >= 0 && x < width && y >= 0 && y < height) {
             const key = y * width + x;
-            if (!seen.has(key)) {
-              seen.add(key);
-              pts.push([x, y]);
-            }
+            if (!seen.has(key)) { seen.add(key); pts.push([x, y]); }
           }
         }
       }
@@ -153,19 +711,46 @@
       return pts;
     }
 
-    // Update capacity readout whenever B inputs change.
-    // Also refreshes the carrier image capacity line when a carrier is loaded.
+    function getRotatedLatticePoints(B, theta_deg, width, height) {
+      const theta = theta_deg * Math.PI / 180;
+      const c = Math.cos(theta), s = Math.sin(theta);
+      const b1x = B[0][0], b1y = B[1][0];
+      const b2x = B[0][1], b2y = B[1][1];
+      const rb1x = c * b1x - s * b1y, rb1y = s * b1x + c * b1y;
+      const rb2x = c * b2x - s * b2y, rb2y = s * b2x + c * b2y;
+      const len1 = Math.sqrt(rb1x * rb1x + rb1y * rb1y);
+      const len2 = Math.sqrt(rb2x * rb2x + rb2y * rb2y);
+      const minStep = Math.max(1, Math.min(len1, len2));
+      const range = Math.ceil(Math.max(width, height) / minStep) + 2;
+      const seen = new Set();
+      const pts = [];
+      for (let n1 = -range; n1 <= range; n1++) {
+        for (let n2 = -range; n2 <= range; n2++) {
+          const x = Math.round(n1 * rb1x + n2 * rb2x);
+          const y = Math.round(n1 * rb1y + n2 * rb2y);
+          if (x >= 0 && x < width && y >= 0 && y < height) {
+            const key = y * width + x;
+            if (!seen.has(key)) { seen.add(key); pts.push([x, y]); }
+          }
+        }
+      }
+      pts.sort((a, b) => a[1] !== b[1] ? a[1] - b[1] : a[0] - b[0]);
+      return pts;
+    }
+
     function updatePtCount() {
-      if (!document.getElementById('modeLattice').checked) return;
+      const mode = getMode();
+      const span = document.getElementById('ptCount');
+      if (mode === 'basic') { span.textContent = ''; return; }
       const B = getB();
       const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
-      const span = document.getElementById('ptCount');
       if (det === 0) { span.textContent = '(singular basis — det = 0)'; return; }
       const n = getLatticePoints(B, SIZE, SIZE).length;
       const maxMsg = Math.floor(n / 8) - HEADER_BYTES;
-      span.textContent = `(${n} lattice points → max ${maxMsg} bytes)`;
-
-      // If a carrier is already loaded, update its capacity line too
+      span.textContent = mode === 'advanced'
+        ? `${n} pts/orientation → max ${maxMsg} bytes`
+        : `${n} lattice points → max ${maxMsg} bytes`;
+      if (mode !== 'lattice') return;
       const carrierFile = document.getElementById('carrierInput').files[0];
       if (!carrierFile) return;
       const reader = new FileReader();
@@ -188,14 +773,91 @@
       r.addEventListener('change', updatePtCount));
     updatePtCount();
 
-    // ── basic mode constants (unchanged) ──────────────────────────────────
+    // ── compass (restyled for dark theme) ────────────────────────────────────
+
+    function drawCompass(canvas, activeDegrees) {
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const cx = W / 2, cy = H / 2;
+      const R = Math.min(W, H) / 2 - 32;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Background fill
+      ctx.fillStyle = '#0f0f2b';
+      ctx.fillRect(0, 0, W, H);
+
+      // Outer ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, 2 * Math.PI);
+      ctx.strokeStyle = 'rgba(0,255,209,0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Reference ticks every 30°
+      for (let d = 0; d < 360; d += 30) {
+        const rad = (d - 90) * Math.PI / 180;
+        ctx.beginPath();
+        ctx.moveTo(cx + (R - 6) * Math.cos(rad), cy + (R - 6) * Math.sin(rad));
+        ctx.lineTo(cx + R * Math.cos(rad), cy + R * Math.sin(rad));
+        ctx.strokeStyle = 'rgba(0,255,209,0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Cardinal labels
+      for (const [label, d] of [['N', 0], ['E', 90], ['S', 180], ['W', 270]]) {
+        const rad = (d - 90) * Math.PI / 180;
+        ctx.fillStyle = 'rgba(0,255,209,0.45)';
+        ctx.font = '10px "Space Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, cx + (R - 14) * Math.cos(rad), cy + (R - 14) * Math.sin(rad));
+      }
+
+      // Center dot
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
+      ctx.fillStyle = 'rgba(0,255,209,0.5)';
+      ctx.fill();
+
+      // Active orientations
+      for (const deg of activeDegrees) {
+        const rad = (deg - 90) * Math.PI / 180;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + (R - 8) * Math.cos(rad), cy + (R - 8) * Math.sin(rad));
+        ctx.strokeStyle = 'rgba(255,107,107,0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(cx + (R - 10) * Math.cos(rad), cy + (R - 10) * Math.sin(rad));
+        ctx.lineTo(cx + (R + 4)  * Math.cos(rad), cy + (R + 4)  * Math.sin(rad));
+        ctx.strokeStyle = '#FF6B6B';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        const lx = cx + (R + 20) * Math.cos(rad);
+        const ly = cy + (R + 20) * Math.sin(rad);
+        ctx.fillStyle = '#FF6B6B';
+        ctx.font = 'bold 9px "Space Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(deg + '\u00b0', lx, ly);
+      }
+    }
+
+    // Draw empty compass on load
+    drawCompass(document.getElementById('compassCanvas'), []);
+
+    // ── basic mode ──────────────────────────────────────────────────────────
 
     const SPACING        = 16;
-    const NODES          = SIZE / SPACING;           // 32 per axis
-    const BASIC_TOTAL_BITS = NODES * NODES;          // 1024 bits
-    const BASIC_MAX_MSG  = BASIC_TOTAL_BITS / 8 - HEADER_BYTES;  // 126 bytes
-
-    // ── image builders ─────────────────────────────────────────────────────
+    const NODES          = SIZE / SPACING;
+    const BASIC_TOTAL_BITS = NODES * NODES;
+    const BASIC_MAX_MSG  = BASIC_TOTAL_BITS / 8 - HEADER_BYTES;
 
     function buildBasicPixels() {
       const imgData = new ImageData(SIZE, SIZE);
@@ -211,13 +873,11 @@
       return imgData;
     }
 
-    // White background; lattice nodes rendered as gray dots.
     function buildLatticePixels(pts) {
       const imgData = new ImageData(SIZE, SIZE);
       const px = imgData.data;
       for (let i = 0; i < px.length; i += 4) {
-        px[i] = px[i + 1] = px[i + 2] = 255;
-        px[i + 3] = 255;
+        px[i] = px[i + 1] = px[i + 2] = 255; px[i + 3] = 255;
       }
       for (const [x, y] of pts) {
         const i = (y * SIZE + x) * 4;
@@ -226,27 +886,69 @@
       return imgData;
     }
 
-    // ── encode ─────────────────────────────────────────────────────────────
+    function buildWhitePixels() {
+      const imgData = new ImageData(SIZE, SIZE);
+      const px = imgData.data;
+      for (let i = 0; i < px.length; i += 4) {
+        px[i] = px[i + 1] = px[i + 2] = 255; px[i + 3] = 255;
+      }
+      return imgData;
+    }
+
+    // ── encode ───────────────────────────────────────────────────────────────
 
     document.getElementById('encodeBtn').addEventListener('click', () => {
       const msg = document.getElementById('messageInput').value;
       if (!msg) { alert('Enter a message.'); return; }
-
       const msgBytes = new TextEncoder().encode(msg);
-      const isLattice = document.getElementById('modeLattice').checked;
+      const mode = getMode();
 
-      if (isLattice) {
+      if (mode === 'advanced') {
         const B = getB();
         const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
-        if (det === 0) {
-          alert('Basis matrix is singular (det = 0). Choose a different basis.');
-          return;
+        if (det === 0) { alert('Basis matrix is singular (det = 0). Choose a different basis.'); return; }
+        const numOrientations = Math.floor(Math.random() * 5) + 3;
+        const degrees = [];
+        while (degrees.length < numOrientations) {
+          const d = Math.floor(Math.random() * 360);
+          if (!degrees.includes(d)) degrees.push(d);
         }
+        degrees.sort((a, b) => a - b);
+        const payload = new Uint8Array(HEADER_BYTES + msgBytes.length);
+        payload[0] = (msgBytes.length >> 8) & 0xFF;
+        payload[1] =  msgBytes.length       & 0xFF;
+        payload.set(msgBytes, HEADER_BYTES);
+        const bits = bytesToBits(payload);
+        for (const deg of degrees) {
+          const pts = getRotatedLatticePoints(B, deg, SIZE, SIZE);
+          const maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
+          if (maxMsg < 1 || msgBytes.length > maxMsg) {
+            alert(`Not enough lattice points at ${deg}°. Max ${maxMsg} bytes for current basis (message is ${msgBytes.length} bytes). Try a denser basis.`);
+            return;
+          }
+        }
+        const imgData = buildWhitePixels();
+        const px = imgData.data;
+        for (const deg of degrees) {
+          const pts = getRotatedLatticePoints(B, deg, SIZE, SIZE);
+          for (let bi = 0; bi < bits.length; bi++) {
+            const [x, y] = pts[bi];
+            const i = (y * SIZE + x) * 4;
+            px[i + 2] = (px[i + 2] & 0xFE) | bits[bi];
+          }
+        }
+        advancedOrientations = degrees;
+        drawCompass(document.getElementById('compassCanvas'), degrees);
+        document.getElementById('compassHint').textContent =
+          `Active: ${degrees.map(d => d + '°').join(', ')}`;
+        finishEncode(imgData, SIZE, SIZE);
 
+      } else if (mode === 'lattice') {
+        const B = getB();
+        const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
+        if (det === 0) { alert('Basis matrix is singular (det = 0). Choose a different basis.'); return; }
         const carrierFile = document.getElementById('carrierInput').files[0];
-
         if (carrierFile) {
-          // ── carrier image path ───────────────────────────────────────────
           const reader = new FileReader();
           reader.onload = e => {
             const img = new Image();
@@ -254,61 +956,39 @@
               const w = img.width, h = img.height;
               const pts = getLatticePoints(B, w, h);
               const maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
-              if (maxMsg < 1) {
-                alert('Basis matrix produces too few lattice points for this carrier image size.');
-                return;
-              }
-              if (msgBytes.length > maxMsg) {
-                alert(`Message too long for this carrier image. Max ${maxMsg} UTF-8 bytes (got ${msgBytes.length}).`);
-                return;
-              }
-
+              if (maxMsg < 1) { alert('Basis matrix produces too few lattice points for this carrier image size.'); return; }
+              if (msgBytes.length > maxMsg) { alert(`Message too long for this carrier image. Max ${maxMsg} UTF-8 bytes (got ${msgBytes.length}).`); return; }
               const payload = new Uint8Array(HEADER_BYTES + msgBytes.length);
               payload[0] = (msgBytes.length >> 8) & 0xFF;
               payload[1] =  msgBytes.length       & 0xFF;
               payload.set(msgBytes, HEADER_BYTES);
               const bits = bytesToBits(payload);
-
-              // Draw carrier onto a canvas to access and modify its pixel data
               const cvs = document.createElement('canvas');
               cvs.width = w; cvs.height = h;
               const ctx = cvs.getContext('2d');
               ctx.drawImage(img, 0, 0);
               const imgData = ctx.getImageData(0, 0, w, h);
               const px = imgData.data;
-
-              // Embed bits at lattice points via LSB of blue channel
               for (let bi = 0; bi < bits.length; bi++) {
                 const [x, y] = pts[bi];
                 const i = (y * w + x) * 4;
                 px[i + 2] = (px[i + 2] & 0xFE) | bits[bi];
               }
-
               finishEncode(imgData, w, h);
             };
             img.src = e.target.result;
           };
           reader.readAsDataURL(carrierFile);
-
         } else {
-          // ── generated white lattice image (original behaviour) ───────────
           const pts = getLatticePoints(B, SIZE, SIZE);
           const maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
-          if (maxMsg < 1) {
-            alert('Basis matrix produces too few lattice points for encoding.');
-            return;
-          }
-          if (msgBytes.length > maxMsg) {
-            alert(`Message too long for this basis. Max ${maxMsg} UTF-8 bytes (got ${msgBytes.length}).`);
-            return;
-          }
-
+          if (maxMsg < 1) { alert('Basis matrix produces too few lattice points for encoding.'); return; }
+          if (msgBytes.length > maxMsg) { alert(`Message too long for this basis. Max ${maxMsg} UTF-8 bytes (got ${msgBytes.length}).`); return; }
           const payload = new Uint8Array(HEADER_BYTES + msgBytes.length);
           payload[0] = (msgBytes.length >> 8) & 0xFF;
           payload[1] =  msgBytes.length       & 0xFF;
           payload.set(msgBytes, HEADER_BYTES);
           const bits = bytesToBits(payload);
-
           const imgData = buildLatticePixels(pts);
           const px = imgData.data;
           for (let bi = 0; bi < bits.length; bi++) {
@@ -316,23 +996,15 @@
             const i = (y * SIZE + x) * 4;
             px[i + 2] = (px[i + 2] & 0xFE) | bits[bi];
           }
-
           finishEncode(imgData, SIZE, SIZE);
         }
-
       } else {
-        // ── basic mode ────────────────────────────────────────────────────
-        if (msgBytes.length > BASIC_MAX_MSG) {
-          alert(`Message too long. Max ${BASIC_MAX_MSG} UTF-8 bytes (got ${msgBytes.length}).`);
-          return;
-        }
-
+        if (msgBytes.length > BASIC_MAX_MSG) { alert(`Message too long. Max ${BASIC_MAX_MSG} UTF-8 bytes (got ${msgBytes.length}).`); return; }
         const payload = new Uint8Array(HEADER_BYTES + msgBytes.length);
         payload[0] = (msgBytes.length >> 8) & 0xFF;
         payload[1] =  msgBytes.length       & 0xFF;
         payload.set(msgBytes, HEADER_BYTES);
         const bits = bytesToBits(payload);
-
         const imgData = buildBasicPixels();
         const px = imgData.data;
         let bitIdx = 0;
@@ -343,23 +1015,18 @@
             px[pxI + 2] = (px[pxI + 2] & 0xFE) | bit;
           }
         }
-
         finishEncode(imgData, SIZE, SIZE);
       }
     });
 
     function finishEncode(imgData, width, height) {
       const canvas = document.getElementById('canvas');
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = width; canvas.height = height;
       canvas.getContext('2d').putImageData(imgData, 0, 0);
-
       const preview = document.getElementById('previewCanvas');
-      preview.width = width;
-      preview.height = height;
+      preview.width = width; preview.height = height;
       preview.style.display = 'block';
       preview.getContext('2d').putImageData(imgData, 0, 0);
-
       canvas.toBlob(blob => {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -368,28 +1035,49 @@
       }, 'image/png');
     }
 
-    // ── decode ─────────────────────────────────────────────────────────────
+    // ── decode ────────────────────────────────────────────────────────────────
 
     document.getElementById('decodeBtn').addEventListener('click', () => {
       const file = document.getElementById('pngInput').files[0];
       if (!file) { alert('Select a PNG file first.'); return; }
-
       const reader = new FileReader();
       reader.onload = e => {
         const img = new Image();
         img.onload = () => {
           const cvs = document.createElement('canvas');
-          cvs.width  = img.width;
-          cvs.height = img.height;
+          cvs.width = img.width; cvs.height = img.height;
           const ctx = cvs.getContext('2d');
           ctx.drawImage(img, 0, 0);
           const px = ctx.getImageData(0, 0, img.width, img.height).data;
-
-          const isLattice = document.getElementById('modeLattice').checked;
+          const mode = getMode();
           const out = document.getElementById('decoded');
-          let bits, maxMsg;
 
-          if (isLattice) {
+          if (mode === 'advanced') {
+            const degRaw = document.getElementById('degreeInput').value.trim();
+            if (degRaw === '') { out.textContent = 'Enter an orientation degree to decode.'; return; }
+            const deg = parseInt(degRaw, 10);
+            if (isNaN(deg) || deg < 0 || deg > 359) { out.textContent = 'Enter a whole number between 0 and 359.'; return; }
+            const B = getB();
+            const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
+            if (det === 0) { out.textContent = 'Error: singular basis matrix.'; return; }
+            const pts = getRotatedLatticePoints(B, deg, img.width, img.height);
+            const maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
+            const bits = pts.map(([x, y]) => px[(y * img.width + x) * 4 + 2] & 1);
+            let len = 0;
+            for (let i = 0; i < 16; i++) len = (len << 1) | bits[i];
+            if (len <= 0 || len > maxMsg) { out.textContent = 'No message at this orientation.'; return; }
+            const msgBytes = new Uint8Array(len);
+            for (let b = 0; b < len; b++) {
+              let byte = 0;
+              for (let i = 0; i < 8; i++) byte = (byte << 1) | (bits[16 + b * 8 + i] || 0);
+              msgBytes[b] = byte;
+            }
+            out.textContent = 'Decoded: ' + new TextDecoder().decode(msgBytes);
+            return;
+          }
+
+          let bits, maxMsg;
+          if (mode === 'lattice') {
             const B = getB();
             const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
             if (det === 0) { out.textContent = 'Error: singular basis matrix.'; return; }
@@ -397,7 +1085,6 @@
             maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
             bits = pts.map(([x, y]) => px[(y * img.width + x) * 4 + 2] & 1);
           } else {
-            // ── basic mode ──────────────────────────────────────────────
             const nodes = img.width / SPACING;
             bits = [];
             for (let row = 0; row < nodes; row++) {
@@ -409,22 +1096,15 @@
             maxMsg = BASIC_MAX_MSG;
           }
 
-          // Parse 16-bit length header
           let len = 0;
           for (let i = 0; i < 16; i++) len = (len << 1) | bits[i];
-
-          if (len <= 0 || len > maxMsg) {
-            out.textContent = 'No valid message found (length header: ' + len + ').';
-            return;
-          }
-
+          if (len <= 0 || len > maxMsg) { out.textContent = 'No valid message found (length header: ' + len + ').'; return; }
           const msgBytes = new Uint8Array(len);
           for (let b = 0; b < len; b++) {
             let byte = 0;
             for (let i = 0; i < 8; i++) byte = (byte << 1) | (bits[16 + b * 8 + i] || 0);
             msgBytes[b] = byte;
           }
-
           out.textContent = 'Decoded: ' + new TextDecoder().decode(msgBytes);
         };
         img.src = e.target.result;
