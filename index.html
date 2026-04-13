@@ -561,6 +561,7 @@
             <label class="radio-chip"><input type="radio" name="mode" value="basic"> Basic</label>
             <label class="radio-chip"><input type="radio" name="mode" value="lattice" id="modeLattice" checked> Lattice</label>
             <label class="radio-chip"><input type="radio" name="mode" value="advanced" id="modeAdvanced"> Advanced</label>
+            <label class="radio-chip"><input type="radio" name="mode" value="stacking" id="modeStacking"> Stacking</label>
           </div>
         </div>
 
@@ -595,6 +596,13 @@
 
         <hr class="mac-divider">
 
+        <!-- Stacking tagline -->
+        <div id="stackingTagline" style="display:none" class="field-row">
+          <div class="advanced-note" style="color:rgba(0,255,209,0.8);border-color:rgba(0,255,209,0.25);background:rgba(0,255,209,0.05);">
+            The message is split across three cards. Remove any one — the secret vanishes.
+          </div>
+        </div>
+
         <!-- Encode -->
         <div class="win-section-title">Encode</div>
         <div class="field-row">
@@ -609,9 +617,23 @@
 
         <!-- Decode -->
         <div class="win-section-title">Decode</div>
-        <div class="field-row">
+        <div id="regularDecodeFile" class="field-row">
           <label>Encoded PNG</label>
           <input type="file" id="pngInput" accept="image/png">
+        </div>
+        <div id="stackingDecodeControls" style="display:none">
+          <div class="field-row">
+            <label>Card 1</label>
+            <input type="file" id="stackCard1" accept="image/png">
+          </div>
+          <div class="field-row">
+            <label>Card 2</label>
+            <input type="file" id="stackCard2" accept="image/png">
+          </div>
+          <div class="field-row">
+            <label>Card 3</label>
+            <input type="file" id="stackCard3" accept="image/png">
+          </div>
         </div>
         <div id="advancedDecodeControls" style="display:none" class="field-row">
           <label>Orientation degree (0–359)</label>
@@ -822,14 +844,21 @@
       const mode = getMode();
       const isLattice  = mode === 'lattice';
       const isAdvanced = mode === 'advanced';
+      const isStacking = mode === 'stacking';
       document.getElementById('latticeParams').style.display =
-        (isLattice || isAdvanced) ? '' : 'none';
+        (isLattice || isAdvanced || isStacking) ? '' : 'none';
       document.getElementById('carrierSection').style.display =
         isLattice ? '' : 'none';
       document.getElementById('advancedNote').style.display =
         isAdvanced ? '' : 'none';
       document.getElementById('advancedDecodeControls').style.display =
         isAdvanced ? '' : 'none';
+      document.getElementById('stackingTagline').style.display =
+        isStacking ? '' : 'none';
+      document.getElementById('regularDecodeFile').style.display =
+        isStacking ? 'none' : '';
+      document.getElementById('stackingDecodeControls').style.display =
+        isStacking ? '' : 'none';
       if (!isAdvanced) {
         drawCompass(document.getElementById('compassCanvas'), []);
         document.getElementById('compassHint').textContent = 'Encode in Advanced mode to see orientations';
@@ -1053,6 +1082,64 @@
     // Draw empty compass on load
     drawCompass(document.getElementById('compassCanvas'), []);
 
+    // ── card back renderer ──────────────────────────────────────────────────
+
+    function drawCardBackCanvas(patternColor, suitChar, bgColor, borderColor) {
+      const S = 512;
+      const off = document.createElement('canvas');
+      off.width = S; off.height = S;
+      const ctx = off.getContext('2d');
+
+      // Background
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, S, S);
+
+      // Diamond cross-hatch pattern (±45° lines)
+      ctx.save();
+      ctx.strokeStyle = patternColor;
+      ctx.lineWidth = 1.2;
+      ctx.globalAlpha = 0.32;
+      const sp = 28;
+      ctx.beginPath();
+      for (let d = -S; d <= S * 2; d += sp) {
+        // NW→SE (+45°)
+        ctx.moveTo(d, 0); ctx.lineTo(d + S, S);
+        // NE→SW (−45°)
+        ctx.moveTo(d, 0); ctx.lineTo(d - S, S);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Coral outer border
+      const bw = 20;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = bw;
+      ctx.strokeRect(bw / 2, bw / 2, S - bw, S - bw);
+
+      // Inner accent frame in pattern colour
+      const ib = bw + 10;
+      ctx.strokeStyle = patternColor;
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.55;
+      ctx.strokeRect(ib, ib, S - ib * 2, S - ib * 2);
+      ctx.globalAlpha = 1;
+
+      // Suit symbols — top-left and bottom-right (rotated 180°)
+      const sx = ib + 18, sy = ib + 18;
+      ctx.fillStyle = patternColor;
+      ctx.font = 'bold 30px "Space Mono", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(suitChar, sx, sy);
+      ctx.save();
+      ctx.translate(S - sx, S - sy);
+      ctx.rotate(Math.PI);
+      ctx.fillText(suitChar, 0, 0);
+      ctx.restore();
+
+      return ctx.getImageData(0, 0, S, S);
+    }
+
     // ── basic mode ──────────────────────────────────────────────────────────
 
     const SPACING        = 16;
@@ -1061,39 +1148,15 @@
     const BASIC_MAX_MSG  = BASIC_TOTAL_BITS / 8 - HEADER_BYTES;
 
     function buildBasicPixels() {
-      const imgData = new ImageData(SIZE, SIZE);
-      const px = imgData.data;
-      for (let y = 0; y < SIZE; y++) {
-        for (let x = 0; x < SIZE; x++) {
-          const i = (y * SIZE + x) * 4;
-          const v = ((x % SPACING === 0) || (y % SPACING === 0)) ? 200 : 255;
-          px[i] = px[i + 1] = px[i + 2] = v;
-          px[i + 3] = 255;
-        }
-      }
-      return imgData;
+      return drawCardBackCanvas('#00C896', '\u2663', '#0D1020', '#FF6B6B');
     }
 
-    function buildLatticePixels(pts) {
-      const imgData = new ImageData(SIZE, SIZE);
-      const px = imgData.data;
-      for (let i = 0; i < px.length; i += 4) {
-        px[i] = px[i + 1] = px[i + 2] = 255; px[i + 3] = 255;
-      }
-      for (const [x, y] of pts) {
-        const i = (y * SIZE + x) * 4;
-        px[i] = px[i + 1] = px[i + 2] = 200;
-      }
-      return imgData;
+    function buildLatticePixels(_pts) {
+      return drawCardBackCanvas('#9B59B6', '\u2660', '#0D1020', '#FF6B6B');
     }
 
     function buildWhitePixels() {
-      const imgData = new ImageData(SIZE, SIZE);
-      const px = imgData.data;
-      for (let i = 0; i < px.length; i += 4) {
-        px[i] = px[i + 1] = px[i + 2] = 255; px[i + 3] = 255;
-      }
-      return imgData;
+      return drawCardBackCanvas('#F39C12', '\u2666', '#0D1020', '#FF6B6B');
     }
 
     // ── encode ───────────────────────────────────────────────────────────────
@@ -1103,6 +1166,65 @@
       if (!msg) { alert('Enter a message.'); return; }
       const msgBytes = new TextEncoder().encode(msg);
       const mode = getMode();
+
+      if (mode === 'stacking') {
+        const B = getB();
+        const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
+        if (det === 0) { alert('Basis matrix is singular (det = 0). Choose a different basis.'); return; }
+        const pts = getLatticePoints(B, SIZE, SIZE);
+        const maxMsg = Math.floor(pts.length / 8) - HEADER_BYTES;
+        if (maxMsg < 1) { alert('Basis matrix produces too few lattice points for stacking mode.'); return; }
+        if (msgBytes.length > maxMsg) { alert(`Message too long for stacking mode. Max ${maxMsg} UTF-8 bytes (got ${msgBytes.length}).`); return; }
+
+        const n = msgBytes.length;
+        const share1 = new Uint8Array(n);
+        const share2 = new Uint8Array(n);
+        const share3 = new Uint8Array(n);
+        crypto.getRandomValues(share1);
+        crypto.getRandomValues(share2);
+        for (let i = 0; i < n; i++) share3[i] = msgBytes[i] ^ share1[i] ^ share2[i];
+
+        const shares = [share1, share2, share3];
+        const suits  = ['\u2660', '\u2665', '\u2666'];
+        const imgDatas = [];
+
+        for (let k = 0; k < 3; k++) {
+          const payload = new Uint8Array(HEADER_BYTES + n);
+          payload[0] = (n >> 8) & 0xFF;
+          payload[1] = n & 0xFF;
+          payload.set(shares[k], HEADER_BYTES);
+          const bits = bytesToBits(payload);
+          const imgData = drawCardBackCanvas('#00FFD1', suits[k], '#0A0A2E', '#FF6B6B');
+          const px = imgData.data;
+          for (let bi = 0; bi < bits.length; bi++) {
+            const [x, y] = pts[bi];
+            const idx = (y * SIZE + x) * 4;
+            px[idx + 2] = (px[idx + 2] & 0xFE) | bits[bi];
+          }
+          imgDatas.push(imgData);
+        }
+
+        // Show card 1 as preview
+        const preview = document.getElementById('previewCanvas');
+        preview.width = SIZE; preview.height = SIZE;
+        preview.style.display = 'block';
+        preview.getContext('2d').putImageData(imgDatas[0], 0, 0);
+
+        // Download all 3 cards
+        for (let k = 0; k < 3; k++) {
+          const off = document.createElement('canvas');
+          off.width = SIZE; off.height = SIZE;
+          off.getContext('2d').putImageData(imgDatas[k], 0, 0);
+          const kk = k;
+          off.toBlob(blob => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `stack_card_${kk + 1}.png`;
+            setTimeout(() => a.click(), kk * 250);
+          }, 'image/png');
+        }
+        return;
+      }
 
       if (mode === 'advanced') {
         const B = getB();
@@ -1239,6 +1361,70 @@
     // ── decode ────────────────────────────────────────────────────────────────
 
     document.getElementById('decodeBtn').addEventListener('click', () => {
+      const mode = getMode();
+      const out  = document.getElementById('decoded');
+
+      if (mode === 'stacking') {
+        const files = [
+          document.getElementById('stackCard1').files[0],
+          document.getElementById('stackCard2').files[0],
+          document.getElementById('stackCard3').files[0]
+        ];
+        if (files.some(f => !f)) {
+          out.textContent = 'Incomplete stack — all 3 cards required to reveal the message.';
+          return;
+        }
+        const B = getB();
+        const det = B[0][0] * B[1][1] - B[0][1] * B[1][0];
+        if (det === 0) { out.textContent = 'Error: singular basis matrix.'; return; }
+        const loadImg = f => new Promise(res => {
+          const r = new FileReader();
+          r.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+              const c = document.createElement('canvas');
+              c.width = img.width; c.height = img.height;
+              const cx = c.getContext('2d');
+              cx.drawImage(img, 0, 0);
+              res(cx.getImageData(0, 0, img.width, img.height));
+            };
+            img.src = e.target.result;
+          };
+          r.readAsDataURL(f);
+        });
+        Promise.all(files.map(loadImg)).then(iList => {
+          const shares = iList.map(id => {
+            const px = id.data, w = id.width, h = id.height;
+            const pts = getLatticePoints(B, w, h);
+            const bits = pts.map(([x, y]) => px[(y * w + x) * 4 + 2] & 1);
+            let len = 0;
+            for (let i = 0; i < 16; i++) len = (len << 1) | bits[i];
+            const maxM = Math.floor(pts.length / 8) - HEADER_BYTES;
+            if (len <= 0 || len > maxM) return null;
+            const sb = new Uint8Array(len);
+            for (let b = 0; b < len; b++) {
+              let byte = 0;
+              for (let i = 0; i < 8; i++) byte = (byte << 1) | (bits[16 + b * 8 + i] || 0);
+              sb[b] = byte;
+            }
+            return sb;
+          });
+          if (shares.some(s => s === null)) {
+            out.textContent = 'Incomplete stack — all 3 cards required to reveal the message.';
+            return;
+          }
+          const len = shares[0].length;
+          if (!shares.every(s => s.length === len)) {
+            out.textContent = 'Card mismatch — these cards appear to be from different stacks.';
+            return;
+          }
+          const msgB = new Uint8Array(len);
+          for (let i = 0; i < len; i++) msgB[i] = shares[0][i] ^ shares[1][i] ^ shares[2][i];
+          out.textContent = 'Decoded: ' + new TextDecoder().decode(msgB);
+        });
+        return;
+      }
+
       const file = document.getElementById('pngInput').files[0];
       if (!file) { alert('Select a PNG file first.'); return; }
       const reader = new FileReader();
